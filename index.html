@@ -89,6 +89,27 @@ button.small { padding: 5px 10px; font-size: 13px; }
 .bar { height: 8px; border-radius: 3px; background: var(--tc); min-width: 2px; }
 .tablebox { overflow-x: auto; }
 .note { font-size: 13px; color: var(--muted); max-width: 70ch; }
+
+/* 개발자 화면 */
+.dev-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.inp, select { font: inherit; font-size: 14px; background: #0b0d12; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.inp:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.inp.num { width: 6.5em; font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.inp.pw { width: 8em; letter-spacing: .3em; }
+.dev-body { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 900px) { .dev-body { grid-template-columns: minmax(0, 1fr); } }
+.dev-body .wide { grid-column: 1 / -1; }
+.badge { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
+.badge.off { background: #2a2f3d; color: var(--muted); }
+.devtable { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.devtable th, .devtable td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.devtable th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.devtable td.num { font-family: var(--mono); text-align: right; }
+.out { font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; background: #0b0d12; border: 1px solid var(--line); border-radius: 10px; padding: 12px; max-height: 320px; overflow: auto; margin: 0; }
+textarea.out { width: 100%; min-height: 220px; color: var(--ink); resize: vertical; }
+.steps { display: grid; grid-template-columns: repeat(21, 1fr); gap: 2px; align-items: end; height: 70px; }
+.steps i { display: block; background: var(--tc); border-radius: 2px 2px 0 0; min-height: 1px; }
+.cfgflag { font-size: 12.5px; color: var(--accent); }
 </style>
 
 <div class="wrap">
@@ -158,21 +179,126 @@ button.small { padding: 5px 10px; font-size: 13px; }
       <button id="simBtn" type="button">5,000명 인생 굴려 보기</button></div>
     <p class="note">화면의 가챠와 같은 함수로 1인당 9장(출생 5 + 성장 4)을 뽑는다. '설계값'은 tools/gacha_sim.py로 20만 명을 돌린 실효 확률이다. 5,000명이면 희귀 이상 등급은 ±0.5%p 안팎으로 흔들린다.</p>
     <div class="tablebox"><table id="simTable"><thead><tr><th>등급</th><th class="num">설계값</th><th class="num">이번 측정</th><th style="width:40%"></th></tr></thead><tbody></tbody></table></div>
+    <p class="note" id="simNote" hidden>지금은 개발자 설정이 적용된 상태다. '설계값'은 기본 설정 기준이라 이번 측정과 다를 수 있다.</p>
   </section>
+
+  <section class="panel" aria-label="개발자 화면">
+    <div class="dev-head">
+      <h2>개발자 화면</h2>
+      <span class="badge off" id="devState">잠김</span>
+      <span class="cfgflag" id="cfgFlag" hidden>개발자 설정 적용 중</span>
+      <span class="spacer"></span>
+      <button class="small ghost" id="devLock" type="button" hidden>다시 잠그기</button>
+    </div>
+    <form class="row" id="devForm" autocomplete="off">
+      <label class="label" for="devPw">비밀번호</label>
+      <input class="inp pw" id="devPw" type="password" inputmode="numeric" maxlength="12">
+      <button type="submit">열기</button>
+      <span class="note" id="devMsg"></span>
+    </form>
+  </section>
+
+  <div class="dev-body" id="devBody" hidden>
+    <section class="panel" aria-label="연속 뽑기">
+      <h2>연속 뽑기</h2>
+      <div class="row">
+        <label class="label" for="dvKind">종류</label>
+        <select id="dvKind"><option value="재능">재능</option><option value="인연">인연</option><option value="부">부모</option></select>
+        <label class="label" for="dvN">횟수</label>
+        <select id="dvN"><option>1</option><option selected>10</option><option>100</option><option>1000</option><option>10000</option><option>100000</option></select>
+      </div>
+      <label class="note"><input type="checkbox" id="dvFromLife" checked> 지금 인생의 눈치·천장에서 시작한다</label>
+      <div class="row">
+        <button class="primary" id="dvAnim" type="button">연출로 뽑기 · 인생에 추가 (최대 10)</button>
+        <button id="dvFast" type="button">통계만 빠르게</button>
+      </div>
+      <div id="dvOut" class="note">통계만 빠르게 돌리면 인생에는 아무것도 남지 않는다. 고정한 결과도 쓰지 않는다.</div>
+    </section>
+
+    <section class="panel" aria-label="상태 조작과 결과 고정">
+      <h2>상태 · 결과 고정</h2>
+      <div class="row">
+        <label class="label" for="dsG">눈치</label><input class="inp num" id="dsG" type="number" min="0">
+        <label class="label" for="dsPity">전설까지</label><input class="inp num" id="dsPity" type="number" min="0">
+        <label class="label" for="dsBok">복</label><input class="inp num" id="dsBok" type="number" min="0">
+      </div>
+      <div class="row">
+        <label class="label" for="dsStage">인생 단계</label>
+        <select id="dsStage"><option value="-1">출생 전</option><option value="1">초등학교 입학</option><option value="2">중학교 입학</option><option value="3">고등학교 입학</option><option value="4">성인</option><option value="5">복 뽑기만</option></select>
+        <button id="dsApply" type="button">상태 적용</button>
+      </div>
+      <div class="row">
+        <label class="label" for="dfFam">다음 결과</label>
+        <select id="dfFam"></select><select id="dfSub"></select>
+        <label class="note"><input type="checkbox" id="dfKeep"> 계속 고정</label>
+      </div>
+      <div class="row">
+        <button id="dfSet" type="button">고정</button><button class="ghost" id="dfClear" type="button">해제</button>
+        <span class="note" id="dfState">고정 없음</span>
+      </div>
+    </section>
+
+    <section class="panel wide" aria-label="확률 편집">
+      <div class="row"><h2>확률 편집</h2><span class="spacer"></span><span class="note" id="cfMsg"></span></div>
+      <div class="tablebox"><table class="devtable" id="cfTable"></table></div>
+      <div class="row">
+        <span class="label">눈치 가득일 때</span>
+        <label class="label" for="cfSure희귀">희귀</label><input class="inp num" id="cfSure희귀" type="number" min="0">
+        <label class="label" for="cfSure전설">전설</label><input class="inp num" id="cfSure전설" type="number" min="0">
+        <label class="label" for="cfSure신화">신화</label><input class="inp num" id="cfSure신화" type="number" min="0">
+      </div>
+      <div class="row">
+        <label class="label" for="cfGaugeMax">눈치 최대</label><input class="inp num" id="cfGaugeMax" type="number" min="1" max="30">
+        <label class="label" for="cfTopPity">전설 천장(장)</label><input class="inp num" id="cfTopPity" type="number" min="1">
+        <label class="label" for="cfRefund실패">실패 사과 복</label><input class="inp num" id="cfRefund실패" type="number" min="0">
+        <label class="label" for="cfRefund재앙">재앙 사과 복</label><input class="inp num" id="cfRefund재앙" type="number" min="0">
+      </div>
+      <div class="row">
+        <label class="note"><input type="checkbox" id="cfBirthGuard"> 출생 5연차 준수 이상 보장</label>
+        <label class="note"><input type="checkbox" id="cfCalamity"> 출생 두 번째 재앙 감면</label>
+      </div>
+      <div class="row">
+        <button class="primary" id="cfApply" type="button">적용</button>
+        <button class="ghost" id="cfReset" type="button">기본값으로</button>
+        <button id="cfTables" type="button">프롬프트용 구간표 만들기</button>
+        <button id="cfJson" type="button">설정 JSON</button>
+        <button class="ghost" id="cfCopy" type="button">아래 내용 복사</button>
+      </div>
+      <textarea class="out" id="cfOut" readonly hidden></textarea>
+    </section>
+
+    <section class="panel wide" aria-label="연출 미리보기">
+      <h2>연출 미리보기</h2>
+      <div class="row">
+        <select id="pvFam"></select><select id="pvSub"></select>
+        <select id="pvVar"><option value="plain">기본</option><option value="up">승급 (희귀·전설)</option><option value="down">강등 · 파란빛 (실패·재앙)</option><option value="downgold">강등 · 금빛 (실패·재앙)</option><option value="pity">천장 확정</option></select>
+        <button class="primary" id="pvPlay" type="button">무대에서 재생</button>
+      </div>
+      <p class="note">인생에는 남지 않는다. 결과 카드 칸에 해당 카드 형식이 같이 뜬다.</p>
+    </section>
+  </div>
 </div>
 
+<script src="pools.js"></script>
 <script>
 "use strict";
 // ───────────────────────── 규칙 (prompt/gacha_block.txt · tools/gacha_sim.py와 같은 값)
 const ORDER = ["비정상", "신화", "전설", "희귀", "준수", "정상", "실패", "재앙"];
 const LADDER = ["재앙", "실패", "정상", "준수", "희귀", "전설", "신화"];
-const BASE = { 비정상: 100, 신화: 50, 전설: 350, 희귀: 1100, 준수: 2400, 정상: 4500, 실패: 1200, 재앙: 300 };
-const PER_G = { 희귀: 120, 전설: 35, 신화: 5, 정상: -50, 실패: -80, 재앙: -30 };
-const SURE_CELLS = [["희귀", 1, 7600], ["전설", 7601, 9700], ["신화", 9701, 10000]];
-const SUB = { 재앙: [15, 50], 실패: [15, 50], 정상: [30, 70], 준수: [50, 85], 희귀: [50, 85], 전설: [55, 88], 신화: [60, 92], 비정상: [60, 90] };
+// 기본 규칙값. 개발자 화면에서 바꾸면 CFG만 바뀌고, 화면·검증·구간표 생성이 모두 CFG를 따른다
+const DEFAULT_CFG = {
+  base: { 비정상: 100, 신화: 50, 전설: 350, 희귀: 1100, 준수: 2400, 정상: 4500, 실패: 1200, 재앙: 300 },   // 만분율
+  perG: { 비정상: 0, 신화: 5, 전설: 35, 희귀: 120, 준수: 0, 정상: -50, 실패: -80, 재앙: -30 },        // 눈치 1당 증감
+  sure: { 희귀: 7600, 전설: 2100, 신화: 300 },                                                   // 눈치 가득일 때
+  sub: { 재앙: [15, 50], 실패: [15, 50], 정상: [30, 70], 준수: [50, 85], 희귀: [50, 85], 전설: [55, 88], 신화: [60, 92], 비정상: [60, 90] },
+  gain: { 재앙: 2, 실패: 2, 정상: 1, 준수: 1 },
+  refund: { 재앙: 25, 실패: 10 },
+  gaugeMax: 10, topPity: 40, birthGuard: true, calamityEase: true,
+};
+let CFG = JSON.parse(JSON.stringify(DEFAULT_CFG));
+let FORCE = null;              // 개발자: 다음 결과 고정 { fam, s, keep }
+const isDefaultCfg = () => JSON.stringify(CFG) === JSON.stringify(DEFAULT_CFG);
 const GOOD = new Set(["준수", "희귀", "전설", "신화"]);
-const GAIN = { 재앙: 2, 실패: 2, 정상: 1, 준수: 1 };
-const REFUND = { 재앙: 25, 실패: 10 };
 const MARK = { 재앙: "✕✕", 실패: "✕", 정상: "★", 준수: "★★", 희귀: "★★★", 전설: "★★★★", 신화: "★★★★★", 비정상: "??" };
 const STAT = [-20, -15, -10, -8, -5, -2, 1, 3, 5, 7, 9, 11, 14, 17, 20, 24, 28, 32, 38, 45, 55];
 const GROW = [0.80, 0.85, 0.90, 0.92, 0.95, 0.98, 1, 1, 1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.40, 1.50, 1.60, 1.80, 2.00, 2.50];
@@ -191,15 +317,12 @@ function pyRound(x) {                       // 파이썬 round와 같은 은행�
   if (Math.abs(x - f - 0.5) < 1e-9) return f % 2 === 0 ? f : f + 1;
   return Math.round(x);
 }
-function table(g, guard) {
-  if (g >= 10) return SURE_CELLS;
-  const w = {};
-  for (const k of ORDER) w[k] = BASE[k] + (PER_G[k] || 0) * g;
-  if (guard) { w.재앙 = 0; w.실패 = 0; w.정상 = 0; }
-  const tot = ORDER.reduce((s, k) => s + w[k], 0);
-  const live = ORDER.filter(k => w[k] > 0);
+function cellsOf(keys, w) {
+  const tot = keys.reduce((s, k) => s + w[k], 0);
+  if (tot <= 0) return [[keys[keys.length - 1], 1, 10000]];
+  const live = keys.filter(k => w[k] > 0);
   const cells = []; let lo = 1;
-  for (const k of ORDER) {
+  for (const k of keys) {
     const n = pyRound(w[k] * 10000 / tot);
     if (n <= 0) continue;
     const hi = k === live[live.length - 1] ? 10000 : lo + n - 1;
@@ -207,163 +330,46 @@ function table(g, guard) {
   }
   return cells;
 }
+function table(g, guard) {
+  if (g >= CFG.gaugeMax) return cellsOf(["희귀", "전설", "신화"], CFG.sure);
+  const w = {};
+  for (const k of ORDER) w[k] = Math.max(0, CFG.base[k] + (CFG.perG[k] || 0) * g);
+  if (guard) { w.재앙 = 0; w.실패 = 0; w.정상 = 0; }
+  return cellsOf(ORDER, w);
+}
 
 // 한 장 굴리기 — 화면과 검증이 같이 쓰는 순수 규칙
 function rollCard(st, birth) {
-  const guard = !!birth && birth.i === 4 && !birth.good;
+  const guard = CFG.birthGuard && !!birth && birth.i === 4 && !birth.good;
   let fam, r1 = null, sure = false;
   const gBefore = st.g, pityBefore = st.topMiss;
-  if (st.topMiss >= 40) { fam = "전설"; sure = "천장"; }
+  if (st.topMiss >= CFG.topPity) { fam = "전설"; sure = "천장"; }
   else {
     r1 = rnd(10000);
-    if (st.g >= 10) sure = "확정";
+    if (st.g >= CFG.gaugeMax) sure = "확정";
     fam = table(st.g, guard).find(c => r1 >= c[1] && r1 <= c[2])[0];
   }
   const r2 = rnd(100);
-  const [a, b] = SUB[fam];
+  const [a, b] = CFG.sub[fam];
   let s = r2 <= a ? 0 : r2 <= b ? 1 : 2;
+  if (FORCE && !st.sim) {
+    fam = FORCE.fam; s = FORCE.s; sure = "고정";
+    if (!FORCE.keep) FORCE = null;
+  }
   let eased = false;
-  if (birth && fam === "재앙") {
+  if (CFG.calamityEase && birth && fam === "재앙") {
     if (birth.calamity) { fam = "실패"; s = 0; eased = true; } else birth.calamity = true;
   }
   if (["희귀", "전설", "신화"].includes(fam)) st.g = 0;
-  else if (fam !== "비정상") st.g = Math.min(10, st.g + GAIN[fam]);
+  else if (fam !== "비정상") st.g = Math.min(CFG.gaugeMax, st.g + (CFG.gain[fam] || 0));
   st.topMiss = (fam === "전설" || fam === "신화") ? 0 : st.topMiss + 1;
-  const bokGain = REFUND[fam] || 0;
+  const bokGain = CFG.refund[fam] || 0;
   st.bok += bokGain;
   if (birth) { birth.good = birth.good || GOOD.has(fam); birth.i += 1; }
-  return { fam, s, r1, r2, sure, guard, eased, gBefore, gAfter: st.g, pityAfter: 40 - st.topMiss, pityBefore, bokGain };
+  return { fam, s, r1, r2, sure, guard, eased, gBefore, gAfter: st.g, pityAfter: CFG.topPity - st.topMiss, pityBefore, bokGain };
 }
 
-// ───────────────────────── 풀 (프롬프트 8.8의 예시를 카드로 풀어 둔 것)
-const TAL = {
-  재앙: [
-    { n: "지독한 불운", st: "운", d: "우산을 두고 온 날만 비가 온다.", fix: "남을 위해 내 행운을 한 번 양보하기" },
-    { n: "집중력 3분", st: "지능", d: "문제집은 늘 첫 장만 새까맣다.", fix: "한 가지를 30일 연속으로 해내기" },
-    { n: "시험 날마다 열이 남", st: "체력", d: "긴장하면 몸이 먼저 무너진다.", fix: "큰 시험 하나를 끝까지 치르기" },
-    { n: "입만 열면 오해받음", st: "사회", d: "좋은 뜻으로 한 말이 매번 반대로 전해진다.", fix: "오해한 친구와 끝까지 이야기해서 풀기" },
-    { n: "무대 공포증", st: "감성", d: "사람들 앞에 서면 머리가 하얘진다.", fix: "전교생 앞에서 발표 한 번 해내기" }],
-  실패: [
-    { n: "박치", st: "감성", d: "박수를 치면 혼자 엇박이다. 본인만 모른다.", fix: "축제 무대에서 끝까지 연주하기" },
-    { n: "음치", st: "감성", d: "애국가도 저절로 조옮김이 된다.", fix: "노래방에서 한 곡을 끝까지 음 안 틀리고 부르기" },
-    { n: "길치", st: "생활", d: "학교 가는 길도 가끔 새롭다.", fix: "처음 가는 동네를 지도 없이 찾아가기" },
-    { n: "심한 멀미", st: "체력", d: "수학여행 버스가 제일 무섭다.", fix: "수학여행 버스에서 끝까지 버티기" },
-    { n: "운동신경 제로", st: "체력", d: "피구에서 늘 첫 번째로 아웃된다.", fix: "피구에서 마지막까지 살아남기" },
-    { n: "심한 낯가림", st: "사회", d: "새 학기 첫 주에는 투명인간이 된다.", fix: "새 학기 첫날 먼저 말 걸기" },
-    { n: "요란한 잠꼬대", st: "생활", d: "수련회만 다녀오면 전설이 된다.", fix: "수련회에서 조용히 하룻밤 자기" }],
-  정상: [
-    { n: "2단 뛰기", st: "체력", d: "줄넘기 시험만큼은 자신 있다." },
-    { n: "라면을 기가 막히게 끓임", st: "생활", d: "물 조절을 눈으로 한다. 계량컵을 써 본 적이 없다." },
-    { n: "암산이 조금 빠름", st: "지능", d: "더치페이 계산은 늘 이 아이 몫이다." },
-    { n: "어디서든 잘 잠", st: "생활", d: "버스 출발 3초 만에 잠든다." },
-    { n: "길을 잘 찾음", st: "생활", d: "처음 가는 곳도 한 번에 찾는다." },
-    { n: "글씨가 예쁨", st: "감성", d: "칠판 판서는 늘 이 아이에게 맡겨진다." },
-    { n: "리액션이 좋음", st: "사회", d: "말하는 사람을 신나게 만든다." }],
-  준수: [
-    { n: "상대음감", st: "감성", d: "노래방 반주가 반음 틀리면 그날 기분이 망한다." },
-    { n: "반 대표 계주", st: "체력", d: "운동회 마지막 주자는 늘 이 아이다." },
-    { n: "영어 발음이 좋음", st: "지능", d: "원어민 선생님이 두 번 쳐다본다." },
-    { n: "그림 손이 빠름", st: "감성", d: "수업 시간 낙서가 작품이 된다." },
-    { n: "말을 조리 있게 함", st: "사회", d: "토론 수업의 에이스." },
-    { n: "조립 손재주", st: "생활", d: "레고 설명서를 펼친 적이 없다." }],
-  희귀: [
-    { n: "수학적 직관", st: "지능", d: "풀이보다 답이 먼저 보인다. 영재원 수준." },
-    { n: "한 번 읽으면 대부분 기억함", st: "지능", d: "교과서를 시험 전날 한 번만 읽는다." },
-    { n: "운동신경 상위 1%", st: "체력", d: "처음 하는 운동도 일주일이면 선수처럼 한다." },
-    { n: "악기 손이 좋음", st: "감성", d: "바이올린 활 쓰는 법을 한 번에 익혔다." },
-    { n: "언어 습득 속도 2배", st: "지능", d: "애니 몇 편이면 일본어가 들린다." },
-    { n: "사람을 모으는 힘", st: "사회", d: "이 아이가 하자고 하면 반이 움직인다." }],
-  전설: [
-    { n: "절대음감", st: "감성", d: "냉장고 소리도 음이름으로 들린다." },
-    { n: "바둑·체스 천재", st: "지능", d: "어른들이 대국을 신청하러 온다." },
-    { n: "한 번 본 장면을 그대로 그림", st: "감성", d: "수학여행 풍경을 기억만으로 그려 냈다." },
-    { n: "타고난 리더", st: "사회", d: "반장이 될 운명이다." },
-    { n: "다치지 않는 몸", st: "체력", d: "잘 다치지 않고, 다쳐도 회복이 3배 빠르다." },
-    { n: "새소리만 듣고 종을 맞힘", st: "지능", d: "다섯 살에 까마귀와 큰부리까마귀 울음을 구분했다." }],
-  신화: [
-    { n: "한 번 들은 곡은 어떤 악기로든 연주함", st: "감성", d: "처음 잡은 첼로로 방금 들은 곡을 켰다." },
-    { n: "수학의 새 분야를 열 직관", st: "지능", d: "교과서에 없는 질문을 하고, 그게 맞다." },
-    { n: "마음을 읽는 공감", st: "사회", d: "처음 보는 사람의 마음을 거의 정확히 읽는다." },
-    { n: "지치지 않는 몸", st: "체력", d: "하루가 남들보다 1.5배 길게 느껴진다." },
-    { n: "모든 언어가 들리는 귀", st: "지능", d: "처음 듣는 언어도 한 달이면 그 언어로 꿈을 꾼다." }],
-  비정상: [
-    [{ n: "하루 한 번 시계가 1분 거꾸로 감", eff: "매일 1분을 돌려받는다.", cost: "그 1분 동안 한 말은 아무도 기억하지 못한다." },
-     { n: "1초 늦게 따라오는 그림자", eff: "그림자가 1초 전의 나를 보여 준다.", cost: "사진에 그림자가 안 찍힐 때가 있다." },
-     { n: "절대 부러지지 않는 연필", eff: "어떤 연필도 이 아이 손에서는 부러지지 않는다.", cost: "지우개는 반드시 잃어버린다." }],
-    [{ n: "새의 말을 알아들음", eff: "까마귀들이 동네 소문을 다 알려 준다.", cost: "수업 중에도 떠들어서 집중을 못 한다." },
-     { n: "따로 움직이는 그림자", eff: "그림자가 숙제를 대신 해 둔다.", cost: "가끔 가출한다." },
-     { n: "하루 한 번 3초 되감기", eff: "실수한 3초를 하루 한 번 되돌린다.", cost: "되감을 때마다 오래된 기억이 하나씩 흐려진다." },
-     { n: "물건과 대화함", eff: "잃어버린 물건이 어디 있는지 물어볼 수 있다.", cost: "버려지는 물건들의 비명을 듣는다." }],
-    [{ n: "중력이 절반인 3미터", eff: "이 아이 주변 3m만 중력이 절반이다.", cost: "주변 물건이 자꾸 떠다니고, 사진은 전부 흔들려 나온다." },
-     { n: "동네가 같은 꿈을 꿈", eff: "이 아이가 잠들면 동네 전체가 같은 꿈을 꾼다.", cost: "악몽을 꾼 다음 날엔 동네가 다 피곤하다." },
-     { n: "비가 피해 가는 아이", eff: "비가 이 아이만 피해서 내린다.", cost: "우산을 써 본 적이 없어서 비 냄새를 모른다." }]]
-};
-const PAR = {
-  재앙: [
-    { j: "사업 실패로 빚더미에 앉음", p: "말수가 줄었다", c: "여유 없음", w: 1, h: 2, d: "현관에 빨간 딱지가 붙어 있다.", fix: "같이 빚 갚는 계획표를 세우기" },
-    { j: "아이를 두고 해외로 떠남", p: "무책임하다", c: "부재", w: 2, h: 1, d: "1년에 엽서 한 장이 온다.", fix: "엽서에 답장을 보내 다시 연락이 닿기" },
-    { j: "하루 종일 방에서 안 나오는 무직", p: "무기력하다", c: "방임", w: 1, h: 2, d: "문 너머로 게임 소리만 들린다.", fix: "같이 동네 한 바퀴 걷기" },
-    { j: "일 때문에 거의 집에 안 들어옴", p: "일밖에 모른다", c: "부재", w: 3, h: 1, d: "냉장고 메모가 대화의 전부다.", fix: "쉬는 날 하루를 같이 보내기" }],
-  실패: [
-    { j: "성적에만 집착하는 잔소리 폭격형", p: "불안이 많다", c: "통제형", w: 3, h: 2, d: "성적표가 나오는 날은 집이 조용하다.", fix: "성적 말고 다른 얘기로 한 시간 대화하기" },
-    { j: "허세가 심하고 수상한 투자에 빠짐", p: "들떠 있다", c: "무관심", w: 2, h: 3, d: "'이번엔 진짜'가 입버릇이다.", fix: "투자 대신 같이 저금통을 채우자고 설득하기" },
-    { j: "대화가 거의 없는 맞벌이", p: "성실하지만 지쳐 있다", c: "방임", w: 3, h: 2, d: "저녁은 각자 시간에 먹는다.", fix: "가족 저녁 한 번 차리기" },
-    { j: "치명적인 아재개그 장인", p: "눈치가 없다", c: "친구형", w: 2, h: 3, d: "친구들 앞에서만 꼭 개그를 한다.", fix: "아재개그로 한 번 웃어 주기" },
-    { j: "약속을 자주 까먹음", p: "다정하지만 덜렁댄다", c: "자율형", w: 2, h: 3, d: "운동회에 두 번 늦었다.", fix: "약속을 같이 달력에 적는 습관 만들기" }],
-  정상: [
-    { j: "중소기업 영업직", p: "성실함", c: "자율형", w: 2, h: 3, d: "주말에도 전화를 받는다." },
-    { j: "동네 치킨집 사장", p: "손이 크다", c: "친구형", w: 2, h: 4, d: "가게 마감 후 남은 치킨이 야식이다." },
-    { j: "택배 기사", p: "무뚝뚝하지만 다정함", c: "자율형", w: 2, h: 3, d: "동네 모든 집 비밀번호를 안다." },
-    { j: "3교대 공장 생산직", p: "묵묵함", c: "자율형", w: 2, h: 3, d: "야간 근무 주에는 낮에 잔다." },
-    { j: "마트 계산원", p: "꼼꼼함", c: "챙김형", w: 2, h: 3, d: "할인 시간대를 정확히 안다." },
-    { j: "살림 9단 전업주부", p: "부지런함", c: "챙김형", w: 2, h: 4, d: "집에 오면 늘 뭔가 끓고 있다." }],
-  준수: [
-    { j: "중학교 국어 교사", p: "차분함", c: "대화형", w: 3, h: 4, d: "집에 책이 천 권쯤 있다." },
-    { j: "약사", p: "꼼꼼함", c: "챙김형", w: 3, h: 3, d: "감기약은 늘 정확한 용량으로 나온다." },
-    { j: "7급 공무원", p: "안정적임", c: "자율형", w: 3, h: 4, d: "칼퇴근해서 저녁을 같이 먹는다." },
-    { j: "소방관", p: "듬직함", c: "믿음형", w: 3, h: 4, d: "출동 사이렌이 들리면 잠깐 말이 없어진다." },
-    { j: "간호사", p: "다정하지만 바쁨", c: "챙김형", w: 3, h: 3, d: "다친 곳은 집에서 다 해결된다." },
-    { j: "동네 피아노 학원 원장", p: "온화함", c: "자율형", w: 3, h: 4, d: "거실에 업라이트 피아노가 있다." }],
-  희귀: [
-    { j: "대학병원 소아과 교수", p: "차분함, 늘 바쁨", c: "자율형", w: 4, h: 2, d: "집에 거의 없지만 생일은 한 번도 잊은 적이 없다." },
-    { j: "변호사", p: "논리적임", c: "대화형", w: 4, h: 3, d: "말싸움으로는 절대 못 이긴다." },
-    { j: "시립교향악단 바이올린 수석", p: "예민하지만 따뜻함", c: "자율형", w: 3, h: 4, d: "연습 소리가 자장가였다." },
-    { j: "연재 중인 웹툰 작가", p: "자유분방함", c: "친구형", w: 3, h: 4, d: "마감 주에는 밤새 키보드 소리가 난다." },
-    { j: "항공기 기장", p: "침착함", c: "믿음형", w: 4, h: 3, d: "해외 기념품이 방 한쪽을 채운다." }],
-  전설: [
-    { j: "세계적인 건축가", p: "섬세함", c: "자율형", w: 5, h: 4, d: "사는 집 자체가 작품이다." },
-    { j: "노벨상 후보 물리학자", p: "엉뚱함", c: "대화형", w: 4, h: 4, d: "저녁 식탁의 화제는 늘 우주다." },
-    { j: "은퇴한 월드투어 바이올리니스트", p: "따뜻함", c: "챙김형", w: 5, h: 4, d: "거실에 무대 사진이 걸려 있다." },
-    { j: "동네 철물점 사장", p: "세상에서 제일 다정함", c: "믿음형", w: 1, h: 5, fixed: true, d: "재력은 없지만, 이 사람과 사는 게 전설이다." }],
-  신화: [
-    { j: "교과서에 실린 살아 있는 작곡가", p: "온화함", c: "대화형", w: 5, h: 5, fixed: true, d: "아무리 바빠도 저녁은 꼭 같이 먹는다." },
-    { j: "인류 첫 달 기지 설계자", p: "장난기 많음", c: "친구형", w: 5, h: 5, fixed: true, d: "아이 숙제를 세상에서 제일 재밌게 도와준다." }],
-  비정상: [
-    [{ j: "평범한 은행원", eff: "그림자가 1초 늦게 따라온다.", cost: "가족사진마다 그림자만 엇나가 있다." }],
-    [{ j: "밤에만 뿔이 돋는 도깨비", eff: "밤이면 집에 도깨비불이 켜진다.", cost: "보름달 뜨는 날엔 외출 금지다." },
-     { j: "3년에 한 번만 사람으로 돌아오는 까치", eff: "평소엔 집 앞 전봇대에 앉아 지켜본다.", cost: "사람 모습으로 있는 건 사흘뿐이다." }],
-    [{ j: "매일 밤 창문으로 들어오는 달", eff: "밤마다 이불을 덮어 주고 간다.", cost: "그믐에는 아무도 오지 않는다." }]]
-};
-const BOND = {
-  재앙: [{ r: "소꿉친구", d: "늘 사고를 몰고 다닌다. 같이 있으면 꼭 혼난다.", fix: "그 친구가 스스로 사과하게 만들기" },
-         { r: "담임", d: "이유를 모르겠지만 나를 싫어한다.", fix: "담임과 단둘이 진심으로 이야기하기" }],
-  실패: [{ r: "짝꿍", d: "약속에 매번 30분씩 늦는다.", fix: "한 번이라도 제시간에 오게 만들기" },
-         { r: "친구", d: "말만 앞서고 실천이 없다.", fix: "같이 계획 하나를 끝까지 해내기" }],
-  정상: [{ r: "같은 아파트 동갑", d: "엘리베이터에서 자주 마주친다." },
-         { r: "학원 같은 반 친구", d: "쉬는 시간마다 매점에 같이 간다." }],
-  준수: [{ r: "믿음직한 짝꿍", d: "숙제를 깜빡하면 말없이 보여 준다." },
-         { r: "학원 선생님", d: "질문하면 끝까지 붙잡고 설명해 준다." }],
-  희귀: [{ r: "라이벌", d: "평생 경쟁할 천재. 시험 때마다 1점 차다." },
-         { r: "사서 선생님", d: "인생 책을 한 권 건네준 사람." }],
-  전설: [{ r: "평생의 단짝", d: "말 안 해도 뭘 원하는지 안다." },
-         { r: "스승", d: "인생의 방향을 바꿔 준 사람." }],
-  신화: [{ r: "운명 같은 사람", d: "만날 때마다 인생이 한 칸씩 나아진다." }],
-  비정상: [[{ r: "나만 보이는 동갑내기", eff: "늘 옆에서 숙제 답을 알려 준다.", cost: "다른 사람 앞에서 대답하면 혼잣말이 된다." }],
-           [{ r: "같은 벤치의 노인", eff: "매년 같은 날 같은 벤치에 나타나 미래를 하나 알려 준다.", cost: "그 미래는 늘 조금씩 틀린다." }],
-           [{ r: "거울 속 친구", eff: "거울 속 내가 따로 말을 건다.", cost: "거울이 깨지는 날엔 한동안 혼자다." }]]
-};
-const NAMES = ["민서", "도윤", "하린", "서준", "지우", "예준", "윤슬", "시우", "가온", "태오", "서아", "이안", "하람", "주원", "다온"];
-const SURN = ["김", "이", "박", "최", "정", "한", "윤", "오", "서", "강"];
+// ───────────────────────── 풀은 pools.js (TAL · PAR · BOND · SURN · NAMES · MOMENT)
 const pick = arr => arr[rnd(arr.length) - 1];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const stars = n => "★".repeat(n) + "☆".repeat(5 - n);
@@ -374,10 +380,21 @@ let S = fresh();
 function fresh() { return { g: 0, topMiss: 0, bok: 0, stage: 0, birthDone: false, parents: [], talents: [], bonds: [], log: [], busy: false }; }
 try { const raw = localStorage.getItem("jungsang-gacha-v1"); if (raw) S = Object.assign(fresh(), JSON.parse(raw), { busy: false }); } catch (e) { }
 function save() { try { localStorage.setItem("jungsang-gacha-v1", JSON.stringify(S)); } catch (e) { } }
+function mergeCfg(c) {
+  const d = JSON.parse(JSON.stringify(DEFAULT_CFG));
+  for (const k of Object.keys(d)) if (c && c[k] !== undefined) d[k] = (typeof d[k] === "object" && !Array.isArray(d[k])) ? Object.assign(d[k], c[k]) : c[k];
+  return d;
+}
+try { const raw = localStorage.getItem("jungsang-gacha-cfg"); if (raw) CFG = mergeCfg(JSON.parse(raw)); } catch (e) { }
+function saveCfg() { try { isDefaultCfg() ? localStorage.removeItem("jungsang-gacha-cfg") : localStorage.setItem("jungsang-gacha-cfg", JSON.stringify(CFG)); } catch (e) { } }
 
 // ───────────────────────── 카드 내용
 function makeContent(kind, fam, s) {
-  if (kind === "재능") return Object.assign({}, fam === "비정상" ? pick(TAL.비정상[s]) : pick(TAL[fam]));
+  if (kind === "재능") {
+    const e = Object.assign({}, fam === "비정상" ? pick(TAL.비정상[s]) : pick(TAL[fam]));
+    e.when = pick(MOMENT);
+    return e;
+  }
   if (kind === "인연") {
     const e = Object.assign({}, fam === "비정상" ? pick(BOND.비정상[s]) : pick(BOND[fam]));
     e.name = pick(SURN) + pick(NAMES);
@@ -386,6 +403,7 @@ function makeContent(kind, fam, s) {
   const e = Object.assign({}, fam === "비정상" ? pick(PAR.비정상[s]) : pick(PAR[fam]));
   if (fam !== "비정상" && !e.fixed) { e.w = clamp(e.w + s - 1, 1, 5); e.h = clamp(e.h + s - 1, 1, 5); }
   e.age = 27 + rnd(18);
+  e.name = pick(SURN) + pick(NAMES);
   return e;
 }
 
@@ -394,12 +412,13 @@ function cardText(c) {
   const head = { 부: "부(父)", 모: "모(母)" }[c.kind] || c.kind;
   if (c.awakened) L.push("✦ 각성");
   L.push(`🥚 삼신 가챠 · ${head}${c.slot ? " " + c.slot : ""}`);
-  const r1 = c.sure === "천장" ? "천장" : (c.sure === "확정" ? `${c.r1}(눈치 확정)` : c.r1);
+  const r1 = c.sure === "천장" ? "천장" : c.sure === "확정" ? `${c.r1}(눈치 확정)` : c.sure === "고정" ? `${c.r1}(개발자 고정)` : c.r1;
   L.push(`🎲 ${r1} · ${c.r2} / 눈치 ${c.gBefore}→${c.gAfter} · 전설까지 ${c.pityAfter}`);
   L.push(c.fam === "비정상" ? `【비정상 · ${subName(c.fam, c.s)}】 ??` : `【${c.fam} · ${subName(c.fam, c.s)}】 ${MARK[c.fam]} · ${c.step}단계`);
   const e = c.e;
   if (c.kind === "재능") {
     L.push(`▸ ${e.n}`);
+    if (e.when) L.push(`🕯 처음 드러난 때: ${e.when}`);
     if (c.fam === "비정상") { L.push(`🌀 효과: ${e.eff}`, `⛓ 대가: ${e.cost}`); }
     else {
       L.push(`"${e.d}"`);
@@ -411,7 +430,7 @@ function cardText(c) {
     if (c.fam === "비정상") L.push(`🌀 효과: ${e.eff}`, `⛓ 대가: ${e.cost}`);
     else L.push(`✦ ${e.d}`, `💞 친밀 ${stars(clamp(Math.ceil(c.step / 4.2), 1, 5))}`);
   } else {
-    L.push(`▸ ${e.j} · ${e.age}세`);
+    L.push(`▸ ${e.name ? e.name + " · " : ""}${e.j} · ${e.age}세`);
     if (c.fam === "비정상") L.push(`🌀 효과: ${e.eff}`, `⛓ 대가: ${e.cost}`);
     else L.push(`🙂 성격: ${e.p} / 🍼 양육: ${e.c}`, `💰 재력 ${stars(e.w)} · 🏠 화목 ${stars(e.h)}`, `✦ ${e.d}`);
   }
@@ -476,6 +495,7 @@ const assetsReady = Promise.all(ASSETS.map(n => new Promise(res => {
 
 const E = { cx: 512, cy: 425, a: 150, b: 200, rot: -7 * Math.PI / 180 }, HOR = 700;
 const RGB = { 재앙: [216, 67, 43], 실패: [180, 154, 114], 정상: [255, 240, 214], 준수: [74, 160, 255], 희귀: [173, 96, 255], 전설: [255, 180, 62], 신화: [236, 232, 255], 비정상: [255, 255, 255] };
+const NEUTRAL = [214, 218, 230];
 const TXT = { 재앙: [232, 112, 94], 실패: [196, 182, 160], 비정상: [236, 234, 228] };
 const LEVEL = { 재앙: .6, 실패: .22, 정상: .45, 준수: .7, 희귀: .85, 전설: 1, 신화: 1, 비정상: .8 };
 const CRK = { 재앙: 4, 실패: 1, 정상: 1, 준수: 2, 희귀: 3, 전설: 4, 신화: 4, 비정상: 2 };
@@ -571,7 +591,8 @@ function look(A, t) {
   const { T, seq, fam, s } = A;
   const k = c01((t - T.change) / Math.max(1, A.D));
   let col = RGB[seq[0]], I = LEVEL[seq[0]] * ease((t - T.crack) / 900), lvl = CRK[seq[0]], flash = 0, inv = false, mode = "②";
-  if (t < T.crack) { I = 0.12; mode = "①"; }
+  if (t < T.crack) { I = 0.12; col = NEUTRAL; mode = "①"; }       // 금이 가기 전엔 등급을 짐작할 빛이 없다
+  else if (t < T.crack + 260) col = mixc(NEUTRAL, col, (t - T.crack) / 260);
   if (seq.length > 1 && t >= T.change) {
     const steps = seq.length - 1, seg = Math.min(steps - 1, Math.floor(k * steps)), kk = k * steps - seg;
     const from = seq[seg], to = seq[seg + 1];
@@ -1036,9 +1057,10 @@ function itemHTML(c) {
 }
 function esc(s) { return String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch])); }
 function render() {
-  $("gVal").textContent = `${S.g}/10`;
-  $("gauge").innerHTML = Array.from({ length: 10 }, (_, i) => `<i class="${i < S.g ? "on" : ""}"></i>`).join("");
-  $("pityVal").textContent = 40 - S.topMiss;
+  $("gVal").textContent = `${S.g}/${CFG.gaugeMax}`;
+  $("gauge").style.gridTemplateColumns = `repeat(${CFG.gaugeMax}, 1fr)`;
+  $("gauge").innerHTML = Array.from({ length: CFG.gaugeMax }, (_, i) => `<i class="${i < S.g ? "on" : ""}"></i>`).join("");
+  $("pityVal").textContent = Math.max(0, CFG.topPity - S.topMiss);
   $("bokVal").textContent = S.bok;
   $("life").innerHTML = STAGES.map((n, i) => {
     const cls = !S.birthDone && i === 0 ? "now" : (i < S.stage || (i === 0 && S.stage >= 1)) ? "done" : (i === S.stage ? "now" : "");
@@ -1085,12 +1107,190 @@ $("copyBtn").addEventListener("click", async () => {
   setTimeout(() => b.textContent = "카드 텍스트 복사", 1600);
 });
 
+// ───────────────────────── 개발자 화면 (비밀번호는 소금 친 SHA-256으로만 비교한다)
+const DEV_HASH = "16487c52270c560b1abd52ec878e2005b04e9aa0555f336007dd84b163bd73eb";
+const SUBS = fam => fam === "비정상" ? ["미세", "뚜렷", "세계급"] : ["하", "중", "상"];
+async function sha256(s) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+function fillSubs(famSel, subSel) {
+  const keep = subSel.value;
+  subSel.innerHTML = SUBS(famSel.value).map((n, i) => `<option value="${i}">${n}</option>`).join("");
+  if (keep) subSel.value = keep;
+}
+function setDevOpen(open) {
+  $("devBody").hidden = !open; $("devForm").hidden = open; $("devLock").hidden = !open;
+  const b = $("devState"); b.textContent = open ? "열림" : "잠김"; b.classList.toggle("off", !open);
+  try { open ? sessionStorage.setItem("jungsang-dev", "1") : sessionStorage.removeItem("jungsang-dev"); } catch (e) { }
+  if (open) buildDev();
+}
+$("devForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const pw = $("devPw").value; $("devPw").value = "";
+  let ok = false;
+  try { ok = (await sha256("jungsang:" + pw)) === DEV_HASH; } catch (e) { $("devMsg").textContent = "이 브라우저에서는 잠금을 확인할 수 없다."; return; }
+  $("devMsg").textContent = ok ? "" : "비밀번호가 틀렸다.";
+  if (ok) setDevOpen(true);
+});
+$("devLock").addEventListener("click", () => setDevOpen(false));
+
+function buildDev() {
+  const famOpts = [...LADDER].reverse().concat("비정상").map(f => `<option>${f}</option>`).join("");
+  for (const id of ["dfFam", "pvFam"]) { const el = $(id); if (!el.options.length) { el.innerHTML = famOpts; el.value = id === "pvFam" ? "전설" : "신화"; } }
+  fillSubs($("dfFam"), $("dfSub")); fillSubs($("pvFam"), $("pvSub"));
+  fillState(); fillCfg(); showForce();
+}
+function fillState() {
+  $("dsG").value = S.g; $("dsG").max = CFG.gaugeMax;
+  $("dsPity").value = Math.max(0, CFG.topPity - S.topMiss);
+  $("dsBok").value = S.bok;
+  $("dsStage").value = S.birthDone ? String(Math.max(1, S.stage)) : "-1";
+}
+$("dfFam").addEventListener("change", () => fillSubs($("dfFam"), $("dfSub")));
+$("pvFam").addEventListener("change", () => fillSubs($("pvFam"), $("pvSub")));
+
+$("dsApply").addEventListener("click", () => {
+  const num = (id, d) => { const v = parseInt($(id).value, 10); return Number.isFinite(v) ? v : d; };
+  S.g = clamp(num("dsG", S.g), 0, CFG.gaugeMax);
+  S.topMiss = clamp(CFG.topPity - num("dsPity", CFG.topPity - S.topMiss), 0, CFG.topPity);
+  S.bok = Math.max(0, num("dsBok", S.bok));
+  const st = parseInt($("dsStage").value, 10);
+  if (st < 0) { S.birthDone = false; S.stage = 0; } else { S.birthDone = true; S.stage = st; }
+  S.log.unshift(`개발자 — 상태 변경: 눈치 ${S.g}, 전설까지 ${CFG.topPity - S.topMiss}, 복 ${S.bok}`);
+  save(); render(); fillState();
+});
+
+function showForce() {
+  $("dfState").textContent = FORCE ? `다음 결과: ${FORCE.fam}·${SUBS(FORCE.fam)[FORCE.s]} ${FORCE.keep ? "(계속)" : "(1회)"}` : "고정 없음";
+}
+$("dfSet").addEventListener("click", () => { FORCE = { fam: $("dfFam").value, s: +$("dfSub").value, keep: $("dfKeep").checked }; showForce(); });
+$("dfClear").addEventListener("click", () => { FORCE = null; showForce(); });
+
+// 연속 뽑기
+$("dvAnim").addEventListener("click", () => {
+  if (S.busy) return;
+  const n = Math.min(10, +$("dvN").value), kind = $("dvKind").value;
+  const list = Array.from({ length: n }, (_, i) => [kind === "부" ? (i % 2 ? "모" : "부") : kind, `· 개발자 ${i + 1}/${n}`, null]);
+  run(list).then(() => { fillState(); showForce(); });
+});
+$("dvFast").addEventListener("click", () => {
+  const n = +$("dvN").value;
+  const st = $("dvFromLife").checked ? { g: S.g, topMiss: S.topMiss, bok: 0, sim: true } : { g: 0, topMiss: 0, bok: 0, sim: true };
+  const fam = Object.fromEntries([...ORDER].map(k => [k, 0])), step = new Array(24).fill(0);
+  const lines = []; let sure = 0;
+  for (let i = 0; i < n; i++) {
+    const r = rollCard(st, null);
+    fam[r.fam]++; step[r.fam === "비정상" ? 21 + r.s : stepOf(r.fam, r.s) - 1]++;
+    if (r.sure) sure++;
+    if (n <= 100) lines.push(`${String(i + 1).padStart(3)}. 🎲 ${r.r1 ?? "천장"}·${r.r2}  G${r.gBefore}→${r.gAfter}  ${r.fam}·${subName(r.fam, r.s)}${r.sure ? `  (${r.sure})` : ""}`);
+  }
+  const maxS = Math.max(1, ...step);
+  const rows = [...LADDER].reverse().concat("비정상").map(k => `<tr style="--tc:${cssColor(k)}"><td>${k}</td><td class="num">${fam[k].toLocaleString()}</td><td class="num">${(fam[k] / n * 100).toFixed(2)}%</td></tr>`).join("");
+  const bars = step.map((v, i) => { const f = i < 21 ? LADDER[Math.floor(i / 3)] : "비정상"; return `<i title="${i < 21 ? `${i + 1}단계 ${f}·${["하", "중", "상"][i % 3]}` : `비정상·${["미세", "뚜렷", "세계급"][i - 21]}`}: ${v}" style="--tc:${cssColor(f)};height:${(v / maxS * 100).toFixed(1)}%"></i>`; }).join("");
+  $("dvOut").className = "";
+  $("dvOut").innerHTML = `<div class="tablebox"><table class="devtable"><tr><th>등급</th><th class="num">장수</th><th class="num">비율</th></tr>${rows}</table></div>
+    <p class="note">단계별 분포 (왼쪽 재앙·하 → 오른쪽 신화·상, 끝 세 칸 비정상)</p><div class="steps">${bars}</div>
+    <p class="note">${n.toLocaleString()}장 · 눈치/천장 확정 ${sure}회 · 끝 상태 눈치 ${st.g}, 전설까지 ${CFG.topPity - st.topMiss}, 사과 복 합계 ${st.bok}</p>
+    ${lines.length ? `<pre class="out">${esc(lines.join("\n"))}</pre>` : ""}`;
+});
+
+// 확률 편집
+function fillCfg() {
+  const head = `<tr><th>등급</th><th>기본(만분율)</th><th>눈치 1당</th><th>하 끝</th><th>중 끝</th><th>눈치 증가</th><th class="num">지금 첫 장</th></tr>`;
+  const first = Object.fromEntries(table(0, false).map(([k, a, b]) => [k, (b - a + 1) / 100]));
+  $("cfTable").innerHTML = head + ORDER.map(k => `<tr style="--tc:${cssColor(k)}"><td><span class="chip">${k}</span></td>
+    <td><input class="inp num" type="number" min="0" data-cf="base" data-k="${k}" value="${CFG.base[k]}" aria-label="${k} 기본 확률"></td>
+    <td><input class="inp num" type="number" data-cf="perG" data-k="${k}" value="${CFG.perG[k] || 0}" aria-label="${k} 눈치당 증감"></td>
+    <td><input class="inp num" type="number" min="0" max="100" data-cf="sub0" data-k="${k}" value="${CFG.sub[k][0]}" aria-label="${k} 하 끝"></td>
+    <td><input class="inp num" type="number" min="0" max="100" data-cf="sub1" data-k="${k}" value="${CFG.sub[k][1]}" aria-label="${k} 중 끝"></td>
+    <td>${k in DEFAULT_CFG.gain ? `<input class="inp num" type="number" min="0" data-cf="gain" data-k="${k}" value="${CFG.gain[k]}" aria-label="${k} 눈치 증가">` : `<span class="note">${["희귀", "전설", "신화"].includes(k) ? "0으로" : "그대로"}</span>`}</td>
+    <td class="num">${(first[k] || 0).toFixed(2)}%</td></tr>`).join("");
+  for (const k of ["희귀", "전설", "신화"]) $("cfSure" + k).value = CFG.sure[k];
+  $("cfGaugeMax").value = CFG.gaugeMax; $("cfTopPity").value = CFG.topPity;
+  $("cfRefund실패").value = CFG.refund.실패; $("cfRefund재앙").value = CFG.refund.재앙;
+  $("cfBirthGuard").checked = CFG.birthGuard; $("cfCalamity").checked = CFG.calamityEase;
+  $("cfgFlag").hidden = isDefaultCfg();
+}
+function readCfg() {
+  const c = JSON.parse(JSON.stringify(CFG)), errs = [];
+  const iv = (el, lo, hi, name) => { const v = parseInt(el.value, 10); if (!Number.isFinite(v) || v < lo || v > hi) { errs.push(name); return null; } return v; };
+  for (const el of $("cfTable").querySelectorAll("input[data-cf]")) {
+    const k = el.dataset.k, f = el.dataset.cf;
+    if (f === "base") c.base[k] = iv(el, 0, 10000, `${k} 기본`);
+    else if (f === "perG") c.perG[k] = iv(el, -10000, 10000, `${k} 눈치당`);
+    else if (f === "sub0") c.sub[k][0] = iv(el, 0, 100, `${k} 하 끝`);
+    else if (f === "sub1") c.sub[k][1] = iv(el, 0, 100, `${k} 중 끝`);
+    else if (f === "gain") c.gain[k] = iv(el, 0, 30, `${k} 눈치 증가`);
+  }
+  for (const k of ["희귀", "전설", "신화"]) c.sure[k] = iv($("cfSure" + k), 0, 10000, `눈치 가득 ${k}`);
+  c.gaugeMax = iv($("cfGaugeMax"), 1, 30, "눈치 최대");
+  c.topPity = iv($("cfTopPity"), 1, 9999, "전설 천장");
+  c.refund.실패 = iv($("cfRefund실패"), 0, 9999, "실패 사과 복");
+  c.refund.재앙 = iv($("cfRefund재앙"), 0, 9999, "재앙 사과 복");
+  c.birthGuard = $("cfBirthGuard").checked; c.calamityEase = $("cfCalamity").checked;
+  for (const k of ORDER) if (c.sub[k][0] !== null && c.sub[k][1] !== null && c.sub[k][0] > c.sub[k][1]) errs.push(`${k}의 하 끝이 중 끝보다 크다`);
+  if (!errs.length && ORDER.reduce((s, k) => s + c.base[k], 0) <= 0) errs.push("기본 확률 합이 0이다");
+  if (!errs.length && ["희귀", "전설", "신화"].reduce((s, k) => s + c.sure[k], 0) <= 0) errs.push("눈치 가득 확률 합이 0이다");
+  return { c, errs };
+}
+$("cfApply").addEventListener("click", () => {
+  const { c, errs } = readCfg();
+  if (errs.length) { $("cfMsg").textContent = "고칠 곳: " + errs.join(", "); return; }
+  CFG = c; S.g = Math.min(S.g, CFG.gaugeMax); saveCfg(); fillCfg(); render(); fillState(); drawSim(ORDER.map(k => [k, null]));
+  const sum = ORDER.reduce((s, k) => s + CFG.base[k], 0);
+  $("cfMsg").textContent = `적용했다. 기본 확률 합 ${sum}${sum !== 10000 ? " (10000이 아니라서 비율대로 나눴다)" : ""}`;
+});
+$("cfReset").addEventListener("click", () => {
+  CFG = JSON.parse(JSON.stringify(DEFAULT_CFG)); saveCfg(); fillCfg(); render(); fillState(); drawSim(ORDER.map(k => [k, null]));
+  $("cfMsg").textContent = "기본값으로 되돌렸다.";
+});
+function promptTables() {
+  const fmt = cells => cells.map(([k, a, b]) => `${k} ${a}-${b}`).join(" / ");
+  const L = ["[1차 굴림 1~10000 — 눈치별 구간표]"];
+  for (let g = 0; g < CFG.gaugeMax; g++) L.push(`   G${g}: ${fmt(table(g, false))}`);
+  L.push(`   G${CFG.gaugeMax}(확정, 1차 굴림을 이 표로): ${fmt(table(CFG.gaugeMax, false))}`);
+  if (CFG.birthGuard) {
+    L.push("", "[출생 보장표 — 5번째 장, 앞 4장에 준수 이상이 없을 때]");
+    for (let g = 0; g < Math.min(9, CFG.gaugeMax); g++) L.push(`     G${g}: ${fmt(table(g, true))}`);
+  }
+  L.push("", "[2차 굴림 1~100]");
+  for (const k of [...LADDER].reverse().concat("비정상")) { const [a, b] = CFG.sub[k], n = SUBS(k); L.push(`   ${k}: ${n[0]} 1-${a} / ${n[1]} ${a + 1}-${b} / ${n[2]} ${b + 1}-100`); }
+  L.push("", "[눈치·천장·보상]",
+    `   눈치 증가: 재앙 +${CFG.gain.재앙} / 실패 +${CFG.gain.실패} / 정상 +${CFG.gain.정상} / 준수 +${CFG.gain.준수} / 희귀 이상 → 0 / 비정상 그대로 · 최대 ${CFG.gaugeMax}`,
+    `   전설 천장: 전설·신화 없이 ${CFG.topPity}장 → 다음 1장 전설`,
+    `   삼신의 사과: 실패 복 +${CFG.refund.실패}, 재앙 복 +${CFG.refund.재앙}`,
+    `   출생 보장 ${CFG.birthGuard ? "켬" : "끔"} · 출생 두 번째 재앙 감면 ${CFG.calamityEase ? "켬" : "끔"}`);
+  return L.join("\n");
+}
+function showOut(text) { const o = $("cfOut"); o.hidden = false; o.value = text; }
+$("cfTables").addEventListener("click", () => showOut(promptTables()));
+$("cfJson").addEventListener("click", () => showOut(JSON.stringify(CFG, null, 2)));
+$("cfCopy").addEventListener("click", async () => {
+  const o = $("cfOut"); if (o.hidden) return;
+  try { await navigator.clipboard.writeText(o.value); $("cfMsg").textContent = "복사했다."; }
+  catch (e) { o.focus(); o.select(); $("cfMsg").textContent = "선택했다. Ctrl+C로 복사하면 된다."; }
+});
+
+// 연출 미리보기
+$("pvPlay").addEventListener("click", () => {
+  if (S.busy) return;
+  const fam = $("pvFam").value, s = +$("pvSub").value, v = $("pvVar").value;
+  const r1 = v === "up" ? 3333 : v === "down" ? 8500 : v === "downgold" ? 8504 : 1;
+  const c = { kind: "재능", slot: "· 미리보기", fam, s, r1: v === "pity" ? null : r1, r2: 50, sure: v === "pity" ? "천장" : false,
+              step: stepOf(fam, s), gBefore: S.g, gAfter: S.g, pityAfter: CFG.topPity - S.topMiss, bokGain: CFG.refund[fam] || 0, seed: rnd(2 ** 30) };
+  c.e = makeContent("재능", fam, s);
+  playCard(c).then(() => showCard(c));
+});
+try { if (sessionStorage.getItem("jungsang-dev") === "1") setDevOpen(true); } catch (e) { }
+$("cfgFlag").hidden = isDefaultCfg();
+
 // ───────────────────────── 확률 검증
 function simulate(n) {
   const cnt = Object.fromEntries(ORDER.map(k => [k, 0]));
   let tot = 0;
   for (let p = 0; p < n; p++) {
-    const st = { g: 0, topMiss: 0, bok: 0 };
+    const st = { g: 0, topMiss: 0, bok: 0, sim: true };
     const b = { i: 0, good: false, calamity: false };
     for (let i = 0; i < 5; i++) { cnt[rollCard(st, b).fam]++; tot++; }
     for (let i = 0; i < 4; i++) { cnt[rollCard(st, null).fam]++; tot++; }
@@ -1098,6 +1298,7 @@ function simulate(n) {
   return ORDER.map(k => [k, cnt[k] / tot * 100]);
 }
 function drawSim(rows) {
+  $("simNote").hidden = isDefaultCfg();
   const max = Math.max(...rows.map(r => Math.max(r[1], EXPECT[r[0]])));
   $("simTable").querySelector("tbody").innerHTML = [...rows].reverse().map(([k, v]) => `<tr style="--tc:${cssColor(k)}"><td>${k}</td><td class="num">${EXPECT[k].toFixed(2)}%</td><td class="num">${v === null ? "—" : v.toFixed(2) + "%"}</td><td><div class="bar" style="width:${((v ?? EXPECT[k]) / max * 100).toFixed(1)}%;opacity:${v === null ? .35 : 1}"></div></td></tr>`).join("");
 }
