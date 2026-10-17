@@ -138,8 +138,8 @@ def main():
     for g, cells in range_table():
         print(f"G{g}: " + " / ".join(f"{k} {a}-{b}" if a else f"{k} -" for k, a, b in cells))
     print("G10(확정): " + " / ".join(f"{k} {v / 100:.0f}%" for k, v in SURE.items()))
-    print("\n[출생 보장표 — 5번째 장, 앞 4장에 준수 이상이 없을 때 (게이지는 4~8)]")
-    for g, cells in range_table(gauges=range(4, 9), birth_guard=True):
+    print("\n[출생 보장표 — 5번째 장, 앞 4장에 준수 이상이 없을 때 (보통 4~8, 비정상이 끼면 더 낮다)]")
+    for g, cells in range_table(gauges=range(0, 9), birth_guard=True):
         print(f"G{g}: " + " / ".join(f"{k} {a}-{b}" if a else f"{k} -" for k, a, b in cells))
     print("\n[2차 굴림 d100 — 하·중·상]")
     for f, (a, b) in SUB.items():
