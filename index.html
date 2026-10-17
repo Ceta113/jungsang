@@ -1,0 +1,733 @@
+<meta charset="utf-8">
+<title>삼신 가챠</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 왼쪽은 알이 깨지는 무대와 결과 카드, 오른쪽은 인생 진행·상태·모은 카드. 밤의 의식 같은 단일 다크 톤 + 삼신 금빛 하나 */
+:root {
+  --bg: #0d0f15;
+  --panel: #141720;
+  --panel-2: #1a1e29;
+  --ink: #ebe7df;
+  --muted: #8d91a2;
+  --line: #262b38;
+  --accent: #efcd8c;
+  --accent-ink: #1a1408;
+  --t-재앙: #d8432b; --t-실패: #b49a72; --t-정상: #f3e6cf; --t-준수: #4aa0ff;
+  --t-희귀: #ad60ff; --t-전설: #ffb43e; --t-신화: #e9e4ff; --t-비정상: #ffffff;
+  --display: "Gowun Batang", "Nanum Myeongjo", "Batang", serif;
+  --body: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", "D2Coding", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+header h1 { font-family: var(--display); font-weight: 700; font-size: clamp(34px, 6vw, 52px); color: var(--accent); margin: 0; letter-spacing: 0.02em; text-wrap: balance; }
+header p { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+.grid { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.col { display: grid; gap: 18px; min-width: 0; }
+h2 { font-family: var(--display); font-size: 21px; margin: 0; font-weight: 700; }
+.label { font-size: 12px; letter-spacing: 0.08em; color: var(--muted); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+
+/* 무대 */
+.stage { position: relative; aspect-ratio: 1; max-width: 100%; border-radius: 16px; overflow: hidden; background: radial-gradient(120% 90% at 50% 38%, #1b2030 0%, #0c0e15 62%, #07080c 100%); border: 1px solid var(--line); --glow: #fff1d8; isolation: isolate; transition: filter .5s; }
+.stage::after { content: ""; position: absolute; inset: 68.4% 0 0 0; background: linear-gradient(#0b0d13cc, #05060aee); z-index: 1; }
+.halo { position: absolute; left: 50%; top: 41%; width: 64%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--glow) 55%, transparent), transparent 70%); opacity: 0; transition: opacity .6s, background .6s; z-index: 0; }
+.stage.lit .halo { opacity: .55; }
+.stage.bright .halo { opacity: 1; }
+.ring { position: absolute; left: 50%; top: 39%; width: 76%; aspect-ratio: 1; transform: translate(-50%, -50%) scale(.6); border-radius: 50%; border: 2px solid transparent; background: conic-gradient(from 0deg, #ffd1e8, #d6f0ff, #e9ffd6, #fff3c8, #f0d6ff, #ffd1e8) border-box; -webkit-mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); opacity: 0; transition: opacity .8s, transform 1.2s cubic-bezier(.2,.8,.2,1); z-index: 2; }
+.stage.myth .ring { opacity: .9; transform: translate(-50%, -50%) scale(1); }
+.beam { position: absolute; left: 50%; top: 0; width: 22%; height: 42%; transform: translateX(-50%); background: linear-gradient(color-mix(in srgb, var(--glow) 0%, transparent), color-mix(in srgb, var(--glow) 45%, transparent)); filter: blur(12px); opacity: 0; transition: opacity .5s; z-index: 0; }
+.stage.descending .beam, .stage.myth .beam { opacity: .8; }
+.egg-wrap { position: absolute; left: 50%; top: 41%; width: 30%; aspect-ratio: 3 / 4; transform: translate(-50%, -50%); z-index: 3; transition: transform .7s cubic-bezier(.2,.9,.25,1), opacity .4s; }
+.egg { position: absolute; inset: 0; border-radius: 50% 50% 47% 47% / 60% 60% 40% 40%; background: radial-gradient(circle at 36% 28%, #f6f1e8 0%, #cfc7b9 38%, #8d8577 78%, #5d574e 100%); box-shadow: 0 0 0 1px color-mix(in srgb, var(--glow) 40%, transparent), 0 0 22px 2px color-mix(in srgb, var(--glow) 0%, transparent); transition: background .6s, box-shadow .6s, filter .6s; transform: rotate(-7deg); }
+.stage.lit .egg { box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--glow) 80%, transparent), 0 0 40px 6px color-mix(in srgb, var(--glow) 55%, transparent); }
+.egg.burnt { background: radial-gradient(circle at 36% 28%, #3b3330 0%, #241e1c 45%, #120f0e 100%); }
+.egg.dull { background: radial-gradient(circle at 36% 28%, #b8b1a6 0%, #8e877c 45%, #57524a 100%); filter: saturate(.6); }
+.egg.dark { background: radial-gradient(circle at 34% 26%, #8a8a90 0%, #1b1b1f 22%, #050506 70%); }
+.egg svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.egg svg path { fill: none; stroke: var(--glow); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 2.5px var(--glow)) drop-shadow(0 0 6px var(--glow)); stroke-dasharray: 400; stroke-dashoffset: 400; transition: stroke-dashoffset .9s ease-out, stroke .5s; }
+.stage.lit .egg svg path { stroke-dashoffset: 0; }
+.refl { position: absolute; left: 50%; top: 68.4%; width: 30%; aspect-ratio: 3 / 4; transform: translateX(-50%) scaleY(-1); transform-origin: top; opacity: .28; filter: blur(2px); z-index: 2; pointer-events: none; }
+.refl .egg { box-shadow: none; }
+.stage.descending .egg-wrap { animation: descend .8s cubic-bezier(.2,.9,.25,1) both; }
+@keyframes descend { from { transform: translate(-50%, -190%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+.stage.shake .egg-wrap { animation: shake .5s linear 2; }
+@keyframes shake { 0%,100% { transform: translate(-50%, -50%) rotate(0); } 25% { transform: translate(-51.5%, -50%) rotate(-3deg); } 75% { transform: translate(-48.5%, -50%) rotate(3deg); } }
+.stage.fall .egg-wrap { transform: translate(-50%, 6%) rotate(84deg); }
+.stage.burst .egg-wrap { transform: translate(-50%, -50%) scale(1.12); opacity: 0; transition: transform .45s ease-in, opacity .45s ease-in; }
+.flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 41%, var(--glow), transparent 60%); opacity: 0; z-index: 4; pointer-events: none; }
+.stage.flashing .flash { animation: flash .55s ease-out; }
+@keyframes flash { 0% { opacity: 0; } 25% { opacity: .95; } 100% { opacity: 0; } }
+.stage.inverted { filter: invert(1) hue-rotate(180deg); }
+.stage.tilted { transform: rotate(-4deg) scale(1.06); transition: transform .6s; }
+.result { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s; z-index: 5; }
+.stage.revealed .result { opacity: 1; }
+.caption { position: absolute; left: 14px; top: 12px; z-index: 6; font-size: 13px; color: #e8e4dccc; background: #0009; padding: 3px 10px; border-radius: 999px; }
+.caption:empty { display: none; }
+@media (prefers-reduced-motion: reduce) { .egg-wrap, .stage *, .stage { animation: none !important; transition: none !important; } }
+
+/* 결과 카드 */
+.card { font-family: var(--mono); font-size: 13.5px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; background: #0b0d12; border: 1px solid var(--line); border-left: 3px solid var(--tc, var(--accent)); border-radius: 10px; padding: 14px 16px; margin: 0; min-height: 7.5em; }
+.card.empty { color: var(--muted); font-family: var(--body); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.spacer { flex: 1; }
+
+button { font: inherit; font-size: 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); padding: 9px 14px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: #3a4152; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+button.ghost { background: transparent; }
+button.small { padding: 5px 10px; font-size: 13px; }
+
+/* 상태 */
+.status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stat b { display: block; font-family: var(--mono); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.gauge { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 6px; }
+.gauge i { height: 8px; border-radius: 3px; background: #2a2f3d; }
+.gauge i.on { background: var(--accent); }
+.life { display: flex; gap: 6px; flex-wrap: wrap; }
+.life span { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.life span.done { color: var(--ink); border-color: #3a4152; }
+.life span.now { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); font-weight: 700; }
+
+/* 모은 카드 */
+.coll { display: grid; gap: 8px; }
+.item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--panel-2); }
+.chip { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; color: #0b0c10; background: var(--tc); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.item .t { min-width: 0; }
+.item .t strong { font-weight: 500; }
+.item .t small { display: block; color: var(--muted); font-size: 12.5px; }
+.none { color: var(--muted); font-size: 13.5px; }
+.log { font-family: var(--mono); font-size: 12.5px; color: var(--muted); display: grid; gap: 3px; max-height: 220px; overflow: auto; }
+
+/* 검증 */
+.verify table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+.verify th, .verify td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.verify th { font-weight: 500; color: var(--muted); font-size: 12.5px; }
+.verify td.num { font-family: var(--mono); text-align: right; }
+.bar { height: 8px; border-radius: 3px; background: var(--tc); min-width: 2px; }
+.tablebox { overflow-x: auto; }
+.note { font-size: 13px; color: var(--muted); max-width: 70ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>삼신 가챠</h1>
+    <p>정상의 출생·성장 가챠를 실제 규칙 그대로 돌려 보는 기계. 1차 굴림으로 등급(재앙~신화, 비정상), 2차 굴림으로 하·중·상이 정해지고, 카드 텍스트는 크랙 봇이 출력할 형식 그대로 나온다.</p>
+  </header>
+
+  <div class="grid">
+    <section class="col" aria-label="연출과 결과">
+      <div class="stage" id="stage">
+        <div class="beam"></div>
+        <div class="halo"></div>
+        <div class="ring"></div>
+        <div class="refl" aria-hidden="true"><div class="egg" id="eggR"></div></div>
+        <div class="egg-wrap" id="eggWrap"><div class="egg" id="egg"><svg viewBox="0 0 100 133" preserveAspectRatio="none" id="cracks"></svg></div></div>
+        <div class="flash"></div>
+        <img class="result" id="result" alt="">
+        <div class="caption" id="caption"></div>
+      </div>
+      <div class="panel">
+        <div class="row">
+          <h2 id="cardTitle">결과 카드</h2>
+          <span class="spacer"></span>
+          <button class="small ghost" id="copyBtn" type="button">카드 텍스트 복사</button>
+        </div>
+        <pre class="card empty" id="card">아직 알이 내려오지 않았다. 오른쪽에서 '출생 5연차'를 눌러 인생을 시작한다.</pre>
+      </div>
+    </section>
+
+    <section class="col" aria-label="인생 진행">
+      <div class="panel">
+        <div class="row"><h2>인생</h2><span class="spacer"></span>
+          <label class="label" for="skip"><input type="checkbox" id="skip"> 연출 건너뛰기</label>
+        </div>
+        <div class="life" id="life"></div>
+        <div class="row" id="actions"></div>
+        <div class="row">
+          <button class="small ghost" id="bokBtn" type="button">선행·극복으로 복 +20</button>
+          <span class="spacer"></span>
+          <button class="small ghost" id="resetBtn" type="button">새 인생</button>
+        </div>
+        <div class="row" id="resetConfirm" hidden>
+          <span class="note">지금 인생을 지우고 0살부터 다시 시작할까?</span>
+          <button class="small" id="resetYes" type="button">다시 시작</button>
+          <button class="small ghost" id="resetNo" type="button">취소</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="status">
+          <div class="stat"><span class="label">눈치</span><b id="gVal">0/10</b><div class="gauge" id="gauge"></div></div>
+          <div class="stat"><span class="label">전설까지</span><b id="pityVal">40</b></div>
+          <div class="stat"><span class="label">복</span><b id="bokVal">0</b></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>부모</h2><div class="coll" id="parents"></div>
+        <h2>재능</h2><div class="coll" id="talents"></div>
+        <h2>인연</h2><div class="coll" id="bonds"></div>
+      </div>
+
+      <div class="panel">
+        <h2>굴림 기록</h2>
+        <div class="log" id="log"><span>아직 굴림이 없다.</span></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel verify" aria-label="확률 검증">
+    <div class="row"><h2>확률 검증</h2><span class="spacer"></span>
+      <button id="simBtn" type="button">5,000명 인생 굴려 보기</button></div>
+    <p class="note">화면의 가챠와 같은 함수로 1인당 9장(출생 5 + 성장 4)을 뽑는다. '설계값'은 tools/gacha_sim.py로 20만 명을 돌린 실효 확률이다. 5,000명이면 희귀 이상 등급은 ±0.5%p 안팎으로 흔들린다.</p>
+    <div class="tablebox"><table id="simTable"><thead><tr><th>등급</th><th class="num">설계값</th><th class="num">이번 측정</th><th style="width:40%"></th></tr></thead><tbody></tbody></table></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+// ───────────────────────── 규칙 (prompt/gacha_block.txt · tools/gacha_sim.py와 같은 값)
+const ORDER = ["비정상", "신화", "전설", "희귀", "준수", "정상", "실패", "재앙"];
+const LADDER = ["재앙", "실패", "정상", "준수", "희귀", "전설", "신화"];
+const BASE = { 비정상: 100, 신화: 50, 전설: 350, 희귀: 1100, 준수: 2400, 정상: 4500, 실패: 1200, 재앙: 300 };
+const PER_G = { 희귀: 120, 전설: 35, 신화: 5, 정상: -50, 실패: -80, 재앙: -30 };
+const SURE_CELLS = [["희귀", 1, 7600], ["전설", 7601, 9700], ["신화", 9701, 10000]];
+const SUB = { 재앙: [15, 50], 실패: [15, 50], 정상: [30, 70], 준수: [50, 85], 희귀: [50, 85], 전설: [55, 88], 신화: [60, 92], 비정상: [60, 90] };
+const GOOD = new Set(["준수", "희귀", "전설", "신화"]);
+const GAIN = { 재앙: 2, 실패: 2, 정상: 1, 준수: 1 };
+const REFUND = { 재앙: 25, 실패: 10 };
+const MARK = { 재앙: "✕✕", 실패: "✕", 정상: "★", 준수: "★★", 희귀: "★★★", 전설: "★★★★", 신화: "★★★★★", 비정상: "??" };
+const STAT = [-20, -15, -10, -8, -5, -2, 1, 3, 5, 7, 9, 11, 14, 17, 20, 24, 28, 32, 38, 45, 55];
+const GROW = [0.80, 0.85, 0.90, 0.92, 0.95, 0.98, 1, 1, 1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.40, 1.50, 1.60, 1.80, 2.00, 2.50];
+const EXPECT = { 비정상: 1.02, 신화: 0.63, 전설: 4.44, 희귀: 14.18, 준수: 24.25, 정상: 43.14, 실패: 10.11, 재앙: 2.23 };
+const subName = (fam, s) => fam === "비정상" ? ["미세", "뚜렷", "세계급"][s] : ["하", "중", "상"][s];
+const stepOf = (fam, s) => fam === "비정상" ? null : LADDER.indexOf(fam) * 3 + s + 1;
+const imgOf = (fam, s) => `img/s${String(fam === "비정상" ? 22 + s : stepOf(fam, s)).padStart(2, "0")}.webp`;
+const famOfStep = n => [LADDER[Math.floor((n - 1) / 3)], (n - 1) % 3];
+
+function rnd(n) {
+  try { const a = new Uint32Array(1); crypto.getRandomValues(a); return (a[0] % n) + 1; }
+  catch (e) { return Math.floor(Math.random() * n) + 1; }
+}
+function pyRound(x) {                       // 파이썬 round와 같은 은행가 반올림
+  const f = Math.floor(x);
+  if (Math.abs(x - f - 0.5) < 1e-9) return f % 2 === 0 ? f : f + 1;
+  return Math.round(x);
+}
+function table(g, guard) {
+  if (g >= 10) return SURE_CELLS;
+  const w = {};
+  for (const k of ORDER) w[k] = BASE[k] + (PER_G[k] || 0) * g;
+  if (guard) { w.재앙 = 0; w.실패 = 0; w.정상 = 0; }
+  const tot = ORDER.reduce((s, k) => s + w[k], 0);
+  const live = ORDER.filter(k => w[k] > 0);
+  const cells = []; let lo = 1;
+  for (const k of ORDER) {
+    const n = pyRound(w[k] * 10000 / tot);
+    if (n <= 0) continue;
+    const hi = k === live[live.length - 1] ? 10000 : lo + n - 1;
+    cells.push([k, lo, hi]); lo = hi + 1;
+  }
+  return cells;
+}
+
+// 한 장 굴리기 — 화면과 검증이 같이 쓰는 순수 규칙
+function rollCard(st, birth) {
+  const guard = !!birth && birth.i === 4 && !birth.good;
+  let fam, r1 = null, sure = false;
+  const gBefore = st.g, pityBefore = st.topMiss;
+  if (st.topMiss >= 40) { fam = "전설"; sure = "천장"; }
+  else {
+    r1 = rnd(10000);
+    if (st.g >= 10) sure = "확정";
+    fam = table(st.g, guard).find(c => r1 >= c[1] && r1 <= c[2])[0];
+  }
+  const r2 = rnd(100);
+  const [a, b] = SUB[fam];
+  let s = r2 <= a ? 0 : r2 <= b ? 1 : 2;
+  let eased = false;
+  if (birth && fam === "재앙") {
+    if (birth.calamity) { fam = "실패"; s = 0; eased = true; } else birth.calamity = true;
+  }
+  if (["희귀", "전설", "신화"].includes(fam)) st.g = 0;
+  else if (fam !== "비정상") st.g = Math.min(10, st.g + GAIN[fam]);
+  st.topMiss = (fam === "전설" || fam === "신화") ? 0 : st.topMiss + 1;
+  const bokGain = REFUND[fam] || 0;
+  st.bok += bokGain;
+  if (birth) { birth.good = birth.good || GOOD.has(fam); birth.i += 1; }
+  return { fam, s, r1, r2, sure, guard, eased, gBefore, gAfter: st.g, pityAfter: 40 - st.topMiss, pityBefore, bokGain };
+}
+
+// ───────────────────────── 풀 (프롬프트 8.8의 예시를 카드로 풀어 둔 것)
+const TAL = {
+  재앙: [
+    { n: "지독한 불운", st: "운", d: "우산을 두고 온 날만 비가 온다.", fix: "남을 위해 내 행운을 한 번 양보하기" },
+    { n: "집중력 3분", st: "지능", d: "문제집은 늘 첫 장만 새까맣다.", fix: "한 가지를 30일 연속으로 해내기" },
+    { n: "시험 날마다 열이 남", st: "체력", d: "긴장하면 몸이 먼저 무너진다.", fix: "큰 시험 하나를 끝까지 치르기" },
+    { n: "입만 열면 오해받음", st: "사회", d: "좋은 뜻으로 한 말이 매번 반대로 전해진다.", fix: "오해한 친구와 끝까지 이야기해서 풀기" },
+    { n: "무대 공포증", st: "감성", d: "사람들 앞에 서면 머리가 하얘진다.", fix: "전교생 앞에서 발표 한 번 해내기" }],
+  실패: [
+    { n: "박치", st: "감성", d: "박수를 치면 혼자 엇박이다. 본인만 모른다.", fix: "축제 무대에서 끝까지 연주하기" },
+    { n: "음치", st: "감성", d: "애국가도 저절로 조옮김이 된다.", fix: "노래방에서 한 곡을 끝까지 음 안 틀리고 부르기" },
+    { n: "길치", st: "생활", d: "학교 가는 길도 가끔 새롭다.", fix: "처음 가는 동네를 지도 없이 찾아가기" },
+    { n: "심한 멀미", st: "체력", d: "수학여행 버스가 제일 무섭다.", fix: "수학여행 버스에서 끝까지 버티기" },
+    { n: "운동신경 제로", st: "체력", d: "피구에서 늘 첫 번째로 아웃된다.", fix: "피구에서 마지막까지 살아남기" },
+    { n: "심한 낯가림", st: "사회", d: "새 학기 첫 주에는 투명인간이 된다.", fix: "새 학기 첫날 먼저 말 걸기" },
+    { n: "요란한 잠꼬대", st: "생활", d: "수련회만 다녀오면 전설이 된다.", fix: "수련회에서 조용히 하룻밤 자기" }],
+  정상: [
+    { n: "2단 뛰기", st: "체력", d: "줄넘기 시험만큼은 자신 있다." },
+    { n: "라면을 기가 막히게 끓임", st: "생활", d: "물 조절을 눈으로 한다. 계량컵을 써 본 적이 없다." },
+    { n: "암산이 조금 빠름", st: "지능", d: "더치페이 계산은 늘 이 아이 몫이다." },
+    { n: "어디서든 잘 잠", st: "생활", d: "버스 출발 3초 만에 잠든다." },
+    { n: "길을 잘 찾음", st: "생활", d: "처음 가는 곳도 한 번에 찾는다." },
+    { n: "글씨가 예쁨", st: "감성", d: "칠판 판서는 늘 이 아이에게 맡겨진다." },
+    { n: "리액션이 좋음", st: "사회", d: "말하는 사람을 신나게 만든다." }],
+  준수: [
+    { n: "상대음감", st: "감성", d: "노래방 반주가 반음 틀리면 그날 기분이 망한다." },
+    { n: "반 대표 계주", st: "체력", d: "운동회 마지막 주자는 늘 이 아이다." },
+    { n: "영어 발음이 좋음", st: "지능", d: "원어민 선생님이 두 번 쳐다본다." },
+    { n: "그림 손이 빠름", st: "감성", d: "수업 시간 낙서가 작품이 된다." },
+    { n: "말을 조리 있게 함", st: "사회", d: "토론 수업의 에이스." },
+    { n: "조립 손재주", st: "생활", d: "레고 설명서를 펼친 적이 없다." }],
+  희귀: [
+    { n: "수학적 직관", st: "지능", d: "풀이보다 답이 먼저 보인다. 영재원 수준." },
+    { n: "한 번 읽으면 대부분 기억함", st: "지능", d: "교과서를 시험 전날 한 번만 읽는다." },
+    { n: "운동신경 상위 1%", st: "체력", d: "처음 하는 운동도 일주일이면 선수처럼 한다." },
+    { n: "악기 손이 좋음", st: "감성", d: "바이올린 활 쓰는 법을 한 번에 익혔다." },
+    { n: "언어 습득 속도 2배", st: "지능", d: "애니 몇 편이면 일본어가 들린다." },
+    { n: "사람을 모으는 힘", st: "사회", d: "이 아이가 하자고 하면 반이 움직인다." }],
+  전설: [
+    { n: "절대음감", st: "감성", d: "냉장고 소리도 음이름으로 들린다." },
+    { n: "바둑·체스 천재", st: "지능", d: "어른들이 대국을 신청하러 온다." },
+    { n: "한 번 본 장면을 그대로 그림", st: "감성", d: "수학여행 풍경을 기억만으로 그려 냈다." },
+    { n: "타고난 리더", st: "사회", d: "반장이 될 운명이다." },
+    { n: "다치지 않는 몸", st: "체력", d: "잘 다치지 않고, 다쳐도 회복이 3배 빠르다." },
+    { n: "새소리만 듣고 종을 맞힘", st: "지능", d: "다섯 살에 까마귀와 큰부리까마귀 울음을 구분했다." }],
+  신화: [
+    { n: "한 번 들은 곡은 어떤 악기로든 연주함", st: "감성", d: "처음 잡은 첼로로 방금 들은 곡을 켰다." },
+    { n: "수학의 새 분야를 열 직관", st: "지능", d: "교과서에 없는 질문을 하고, 그게 맞다." },
+    { n: "마음을 읽는 공감", st: "사회", d: "처음 보는 사람의 마음을 거의 정확히 읽는다." },
+    { n: "지치지 않는 몸", st: "체력", d: "하루가 남들보다 1.5배 길게 느껴진다." },
+    { n: "모든 언어가 들리는 귀", st: "지능", d: "처음 듣는 언어도 한 달이면 그 언어로 꿈을 꾼다." }],
+  비정상: [
+    [{ n: "하루 한 번 시계가 1분 거꾸로 감", eff: "매일 1분을 돌려받는다.", cost: "그 1분 동안 한 말은 아무도 기억하지 못한다." },
+     { n: "1초 늦게 따라오는 그림자", eff: "그림자가 1초 전의 나를 보여 준다.", cost: "사진에 그림자가 안 찍힐 때가 있다." },
+     { n: "절대 부러지지 않는 연필", eff: "어떤 연필도 이 아이 손에서는 부러지지 않는다.", cost: "지우개는 반드시 잃어버린다." }],
+    [{ n: "새의 말을 알아들음", eff: "까마귀들이 동네 소문을 다 알려 준다.", cost: "수업 중에도 떠들어서 집중을 못 한다." },
+     { n: "따로 움직이는 그림자", eff: "그림자가 숙제를 대신 해 둔다.", cost: "가끔 가출한다." },
+     { n: "하루 한 번 3초 되감기", eff: "실수한 3초를 하루 한 번 되돌린다.", cost: "되감을 때마다 오래된 기억이 하나씩 흐려진다." },
+     { n: "물건과 대화함", eff: "잃어버린 물건이 어디 있는지 물어볼 수 있다.", cost: "버려지는 물건들의 비명을 듣는다." }],
+    [{ n: "중력이 절반인 3미터", eff: "이 아이 주변 3m만 중력이 절반이다.", cost: "주변 물건이 자꾸 떠다니고, 사진은 전부 흔들려 나온다." },
+     { n: "동네가 같은 꿈을 꿈", eff: "이 아이가 잠들면 동네 전체가 같은 꿈을 꾼다.", cost: "악몽을 꾼 다음 날엔 동네가 다 피곤하다." },
+     { n: "비가 피해 가는 아이", eff: "비가 이 아이만 피해서 내린다.", cost: "우산을 써 본 적이 없어서 비 냄새를 모른다." }]]
+};
+const PAR = {
+  재앙: [
+    { j: "사업 실패로 빚더미에 앉음", p: "말수가 줄었다", c: "여유 없음", w: 1, h: 2, d: "현관에 빨간 딱지가 붙어 있다.", fix: "같이 빚 갚는 계획표를 세우기" },
+    { j: "아이를 두고 해외로 떠남", p: "무책임하다", c: "부재", w: 2, h: 1, d: "1년에 엽서 한 장이 온다.", fix: "엽서에 답장을 보내 다시 연락이 닿기" },
+    { j: "하루 종일 방에서 안 나오는 무직", p: "무기력하다", c: "방임", w: 1, h: 2, d: "문 너머로 게임 소리만 들린다.", fix: "같이 동네 한 바퀴 걷기" },
+    { j: "일 때문에 거의 집에 안 들어옴", p: "일밖에 모른다", c: "부재", w: 3, h: 1, d: "냉장고 메모가 대화의 전부다.", fix: "쉬는 날 하루를 같이 보내기" }],
+  실패: [
+    { j: "성적에만 집착하는 잔소리 폭격형", p: "불안이 많다", c: "통제형", w: 3, h: 2, d: "성적표가 나오는 날은 집이 조용하다.", fix: "성적 말고 다른 얘기로 한 시간 대화하기" },
+    { j: "허세가 심하고 수상한 투자에 빠짐", p: "들떠 있다", c: "무관심", w: 2, h: 3, d: "'이번엔 진짜'가 입버릇이다.", fix: "투자 대신 같이 저금통을 채우자고 설득하기" },
+    { j: "대화가 거의 없는 맞벌이", p: "성실하지만 지쳐 있다", c: "방임", w: 3, h: 2, d: "저녁은 각자 시간에 먹는다.", fix: "가족 저녁 한 번 차리기" },
+    { j: "치명적인 아재개그 장인", p: "눈치가 없다", c: "친구형", w: 2, h: 3, d: "친구들 앞에서만 꼭 개그를 한다.", fix: "아재개그로 한 번 웃어 주기" },
+    { j: "약속을 자주 까먹음", p: "다정하지만 덜렁댄다", c: "자율형", w: 2, h: 3, d: "운동회에 두 번 늦었다.", fix: "약속을 같이 달력에 적는 습관 만들기" }],
+  정상: [
+    { j: "중소기업 영업직", p: "성실함", c: "자율형", w: 2, h: 3, d: "주말에도 전화를 받는다." },
+    { j: "동네 치킨집 사장", p: "손이 크다", c: "친구형", w: 2, h: 4, d: "가게 마감 후 남은 치킨이 야식이다." },
+    { j: "택배 기사", p: "무뚝뚝하지만 다정함", c: "자율형", w: 2, h: 3, d: "동네 모든 집 비밀번호를 안다." },
+    { j: "3교대 공장 생산직", p: "묵묵함", c: "자율형", w: 2, h: 3, d: "야간 근무 주에는 낮에 잔다." },
+    { j: "마트 계산원", p: "꼼꼼함", c: "챙김형", w: 2, h: 3, d: "할인 시간대를 정확히 안다." },
+    { j: "살림 9단 전업주부", p: "부지런함", c: "챙김형", w: 2, h: 4, d: "집에 오면 늘 뭔가 끓고 있다." }],
+  준수: [
+    { j: "중학교 국어 교사", p: "차분함", c: "대화형", w: 3, h: 4, d: "집에 책이 천 권쯤 있다." },
+    { j: "약사", p: "꼼꼼함", c: "챙김형", w: 3, h: 3, d: "감기약은 늘 정확한 용량으로 나온다." },
+    { j: "7급 공무원", p: "안정적임", c: "자율형", w: 3, h: 4, d: "칼퇴근해서 저녁을 같이 먹는다." },
+    { j: "소방관", p: "듬직함", c: "믿음형", w: 3, h: 4, d: "출동 사이렌이 들리면 잠깐 말이 없어진다." },
+    { j: "간호사", p: "다정하지만 바쁨", c: "챙김형", w: 3, h: 3, d: "다친 곳은 집에서 다 해결된다." },
+    { j: "동네 피아노 학원 원장", p: "온화함", c: "자율형", w: 3, h: 4, d: "거실에 업라이트 피아노가 있다." }],
+  희귀: [
+    { j: "대학병원 소아과 교수", p: "차분함, 늘 바쁨", c: "자율형", w: 4, h: 2, d: "집에 거의 없지만 생일은 한 번도 잊은 적이 없다." },
+    { j: "변호사", p: "논리적임", c: "대화형", w: 4, h: 3, d: "말싸움으로는 절대 못 이긴다." },
+    { j: "시립교향악단 바이올린 수석", p: "예민하지만 따뜻함", c: "자율형", w: 3, h: 4, d: "연습 소리가 자장가였다." },
+    { j: "연재 중인 웹툰 작가", p: "자유분방함", c: "친구형", w: 3, h: 4, d: "마감 주에는 밤새 키보드 소리가 난다." },
+    { j: "항공기 기장", p: "침착함", c: "믿음형", w: 4, h: 3, d: "해외 기념품이 방 한쪽을 채운다." }],
+  전설: [
+    { j: "세계적인 건축가", p: "섬세함", c: "자율형", w: 5, h: 4, d: "사는 집 자체가 작품이다." },
+    { j: "노벨상 후보 물리학자", p: "엉뚱함", c: "대화형", w: 4, h: 4, d: "저녁 식탁의 화제는 늘 우주다." },
+    { j: "은퇴한 월드투어 바이올리니스트", p: "따뜻함", c: "챙김형", w: 5, h: 4, d: "거실에 무대 사진이 걸려 있다." },
+    { j: "동네 철물점 사장", p: "세상에서 제일 다정함", c: "믿음형", w: 1, h: 5, fixed: true, d: "재력은 없지만, 이 사람과 사는 게 전설이다." }],
+  신화: [
+    { j: "교과서에 실린 살아 있는 작곡가", p: "온화함", c: "대화형", w: 5, h: 5, fixed: true, d: "아무리 바빠도 저녁은 꼭 같이 먹는다." },
+    { j: "인류 첫 달 기지 설계자", p: "장난기 많음", c: "친구형", w: 5, h: 5, fixed: true, d: "아이 숙제를 세상에서 제일 재밌게 도와준다." }],
+  비정상: [
+    [{ j: "평범한 은행원", eff: "그림자가 1초 늦게 따라온다.", cost: "가족사진마다 그림자만 엇나가 있다." }],
+    [{ j: "밤에만 뿔이 돋는 도깨비", eff: "밤이면 집에 도깨비불이 켜진다.", cost: "보름달 뜨는 날엔 외출 금지다." },
+     { j: "3년에 한 번만 사람으로 돌아오는 까치", eff: "평소엔 집 앞 전봇대에 앉아 지켜본다.", cost: "사람 모습으로 있는 건 사흘뿐이다." }],
+    [{ j: "매일 밤 창문으로 들어오는 달", eff: "밤마다 이불을 덮어 주고 간다.", cost: "그믐에는 아무도 오지 않는다." }]]
+};
+const BOND = {
+  재앙: [{ r: "소꿉친구", d: "늘 사고를 몰고 다닌다. 같이 있으면 꼭 혼난다.", fix: "그 친구가 스스로 사과하게 만들기" },
+         { r: "담임", d: "이유를 모르겠지만 나를 싫어한다.", fix: "담임과 단둘이 진심으로 이야기하기" }],
+  실패: [{ r: "짝꿍", d: "약속에 매번 30분씩 늦는다.", fix: "한 번이라도 제시간에 오게 만들기" },
+         { r: "친구", d: "말만 앞서고 실천이 없다.", fix: "같이 계획 하나를 끝까지 해내기" }],
+  정상: [{ r: "같은 아파트 동갑", d: "엘리베이터에서 자주 마주친다." },
+         { r: "학원 같은 반 친구", d: "쉬는 시간마다 매점에 같이 간다." }],
+  준수: [{ r: "믿음직한 짝꿍", d: "숙제를 깜빡하면 말없이 보여 준다." },
+         { r: "학원 선생님", d: "질문하면 끝까지 붙잡고 설명해 준다." }],
+  희귀: [{ r: "라이벌", d: "평생 경쟁할 천재. 시험 때마다 1점 차다." },
+         { r: "사서 선생님", d: "인생 책을 한 권 건네준 사람." }],
+  전설: [{ r: "평생의 단짝", d: "말 안 해도 뭘 원하는지 안다." },
+         { r: "스승", d: "인생의 방향을 바꿔 준 사람." }],
+  신화: [{ r: "운명 같은 사람", d: "만날 때마다 인생이 한 칸씩 나아진다." }],
+  비정상: [[{ r: "나만 보이는 동갑내기", eff: "늘 옆에서 숙제 답을 알려 준다.", cost: "다른 사람 앞에서 대답하면 혼잣말이 된다." }],
+           [{ r: "같은 벤치의 노인", eff: "매년 같은 날 같은 벤치에 나타나 미래를 하나 알려 준다.", cost: "그 미래는 늘 조금씩 틀린다." }],
+           [{ r: "거울 속 친구", eff: "거울 속 내가 따로 말을 건다.", cost: "거울이 깨지는 날엔 한동안 혼자다." }]]
+};
+const NAMES = ["민서", "도윤", "하린", "서준", "지우", "예준", "윤슬", "시우", "가온", "태오", "서아", "이안", "하람", "주원", "다온"];
+const SURN = ["김", "이", "박", "최", "정", "한", "윤", "오", "서", "강"];
+const pick = arr => arr[rnd(arr.length) - 1];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const stars = n => "★".repeat(n) + "☆".repeat(5 - n);
+
+// ───────────────────────── 상태
+const STAGES = ["출생", "초등학교 입학", "중학교 입학", "고등학교 입학", "성인"];
+let S = fresh();
+function fresh() { return { g: 0, topMiss: 0, bok: 0, stage: 0, birthDone: false, parents: [], talents: [], bonds: [], log: [], busy: false }; }
+try { const raw = localStorage.getItem("jungsang-gacha-v1"); if (raw) S = Object.assign(fresh(), JSON.parse(raw), { busy: false }); } catch (e) { }
+function save() { try { localStorage.setItem("jungsang-gacha-v1", JSON.stringify(S)); } catch (e) { } }
+
+// ───────────────────────── 카드 내용
+function makeContent(kind, fam, s) {
+  if (kind === "재능") return Object.assign({}, fam === "비정상" ? pick(TAL.비정상[s]) : pick(TAL[fam]));
+  if (kind === "인연") {
+    const e = Object.assign({}, fam === "비정상" ? pick(BOND.비정상[s]) : pick(BOND[fam]));
+    e.name = pick(SURN) + pick(NAMES);
+    return e;
+  }
+  const e = Object.assign({}, fam === "비정상" ? pick(PAR.비정상[s]) : pick(PAR[fam]));
+  if (fam !== "비정상" && !e.fixed) { e.w = clamp(e.w + s - 1, 1, 5); e.h = clamp(e.h + s - 1, 1, 5); }
+  e.age = 27 + rnd(18);
+  return e;
+}
+
+function cardText(c) {
+  const L = [];
+  const head = { 부: "부(父)", 모: "모(母)" }[c.kind] || c.kind;
+  if (c.awakened) L.push("✦ 각성");
+  L.push(`🥚 삼신 가챠 · ${head}${c.slot ? " " + c.slot : ""}`);
+  const r1 = c.sure === "천장" ? "천장" : (c.sure === "확정" ? `${c.r1}(눈치 확정)` : c.r1);
+  L.push(`🎲 ${r1} · ${c.r2} / 눈치 ${c.gBefore}→${c.gAfter} · 전설까지 ${c.pityAfter}`);
+  L.push(c.fam === "비정상" ? `【비정상 · ${subName(c.fam, c.s)}】 ??` : `【${c.fam} · ${subName(c.fam, c.s)}】 ${MARK[c.fam]} · ${c.step}단계`);
+  const e = c.e;
+  if (c.kind === "재능") {
+    L.push(`▸ ${e.n}`);
+    if (c.fam === "비정상") { L.push(`🌀 효과: ${e.eff}`, `⛓ 대가: ${e.cost}`); }
+    else {
+      L.push(`"${e.d}"`);
+      const v = STAT[c.step - 1], gr = GROW[c.step - 1];
+      L.push(`${v < 0 ? "📉" : "📈"} ${e.st} ${v > 0 ? "+" : ""}${v}${gr !== 1 ? ` · ${e.st} 성장 ×${gr.toFixed(2)}` : ""}`);
+    }
+  } else if (c.kind === "인연") {
+    L.push(`▸ ${e.name} · ${e.r}`);
+    if (c.fam === "비정상") L.push(`🌀 효과: ${e.eff}`, `⛓ 대가: ${e.cost}`);
+    else L.push(`✦ ${e.d}`, `💞 친밀 ${stars(clamp(Math.ceil(c.step / 4.2), 1, 5))}`);
+  } else {
+    L.push(`▸ ${e.j} · ${e.age}세`);
+    if (c.fam === "비정상") L.push(`🌀 효과: ${e.eff}`, `⛓ 대가: ${e.cost}`);
+    else L.push(`🙂 성격: ${e.p} / 🍼 양육: ${e.c}`, `💰 재력 ${stars(e.w)} · 🏠 화목 ${stars(e.h)}`, `✦ ${e.d}`);
+  }
+  if ((c.fam === "실패" || c.fam === "재앙") && !c.overcome && e.fix) {
+    const to = c.kind === "재능" ? ` → 【${c.fam === "실패" ? "준수" : "희귀"} · ${subName(c.fam, c.s)}】` : " → 🏠 화목 +2★";
+    L.push(`🔓 극복: ${e.fix}${to}`);
+  }
+  if (c.bokGain) L.push(`🙏 삼신의 사과: 복 +${c.bokGain}`);
+  if (c.eased) L.push(`※ 출생 두 번째 재앙 → 실패·하로 감면 (삼신할미가 한 번은 봐줬다)`);
+  if (c.cancelled) L.push(`※ 비정상 두 장이 서로 상쇄되어 둘 다 정상·중이 되었다`);
+  return L.join("\n");
+}
+
+// ───────────────────────── 한 장 뽑기 (규칙 + 중복 처리)
+function drawOne(kind, slot, birth) {
+  const r = rollCard(S, birth);
+  const c = Object.assign({ kind, slot, step: stepOf(r.fam, r.s) }, r);
+  c.e = makeContent(kind, r.fam, r.s);
+  const list = kind === "재능" ? S.talents : kind === "인연" ? S.bonds : null;
+  // 비정상 두 장 → 상쇄
+  if (r.fam === "비정상" && list) {
+    const prev = list.find(x => x.fam === "비정상");
+    if (prev) {
+      for (const x of [prev, c]) { x.fam = "정상"; x.s = 1; x.step = 8; x.e = makeContent(kind, "정상", 1); x.cancelled = true; }
+    }
+  }
+  // 같은 재능 → 각성
+  if (kind === "재능" && r.fam !== "비정상") {
+    const prev = S.talents.find(x => x.e.n === c.e.n && x.fam !== "비정상");
+    if (prev) {
+      if (GOOD.has(r.fam) || r.fam === "정상") {
+        const ns = Math.min(21, Math.max(prev.step, c.step) + 3);
+        const [f2, s2] = famOfStep(ns);
+        Object.assign(prev, { fam: f2, s: s2, step: ns, awakened: true });
+        c.awakenedInto = prev; c.awakened = true; c.fam = f2; c.s = s2; c.step = ns;
+      } else {
+        prev.easier = true; c.merged = true;
+      }
+    }
+  }
+  if (kind === "부" || kind === "모") S.parents.push(c);
+  else if (!c.awakenedInto && !c.merged) list.push(c);
+  S.log.unshift(`${STAGES[Math.min(S.stage, 4)]} · ${kind} — 🎲 ${c.r1 ?? "천장"}·${c.r2} G${c.gBefore}→${c.gAfter} → ${c.fam}·${subName(c.fam, c.s)}`);
+  S.log = S.log.slice(0, 60);
+  return c;
+}
+
+// ───────────────────────── 연출
+const $ = id => document.getElementById(id);
+const stage = $("stage"), egg = $("egg"), eggR = $("eggR"), cracks = $("cracks"), resultImg = $("result"), caption = $("caption");
+const CRACKS = { 재앙: 4, 실패: 1, 정상: 1, 준수: 2, 희귀: 3, 전설: 4, 신화: 4, 비정상: 2 };
+const cssColor = fam => getComputedStyle(document.documentElement).getPropertyValue("--t-" + fam).trim();
+const sleep = ms => new Promise(r => setTimeout(r, $("skip").checked ? 0 : ms));
+function setGlow(fam) { stage.style.setProperty("--glow", cssColor(fam)); }
+function crackPaths(n) {
+  let d = "";
+  for (let k = 0; k < n * 2; k++) {
+    let x = 50 + (rnd(60) - 30), y = 30 + rnd(60), a = rnd(628) / 100;
+    d += `M${x.toFixed(1)} ${y.toFixed(1)}`;
+    for (let i = 0; i < 9 + n * 2; i++) {
+      a += (rnd(100) - 50) / 60;
+      const nx = x + Math.cos(a) * 5, ny = y + Math.sin(a) * 5;
+      const t = (ny - 66) / 66, w = 50 * Math.sqrt(Math.max(0, 1 - t * t));
+      if (Math.abs(nx - 50) > w - 4 || ny < 6 || ny > 126) break;
+      x = nx; y = ny; d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+    }
+  }
+  cracks.innerHTML = `<path d="${d}"/>`;
+}
+function resetStage() {
+  stage.className = "stage";
+  egg.className = "egg"; eggR.className = "egg";
+  cracks.innerHTML = ""; caption.textContent = "";
+  stage.style.removeProperty("--glow");
+}
+function lowerOf(fam) { return LADDER[Math.max(0, LADDER.indexOf(fam) - 1)]; }
+
+async function perform(c) {
+  resetStage();
+  void stage.offsetWidth;
+  const fam = c.fam;
+  // 시작 빛 정하기
+  let seq;
+  if (fam === "신화") seq = ["희귀", "전설", "신화"];
+  else if (["희귀", "전설"].includes(fam) && (c.sure || (c.r1 && c.r1 % 3 === 0))) seq = [lowerOf(fam), fam];
+  else if (["실패", "재앙"].includes(fam) && c.r1 && c.r1 % 4 === 0) seq = [c.r1 % 8 === 0 ? "전설" : "준수", fam];
+  else if (fam === "비정상") seq = ["정상", "비정상"];
+  else seq = [fam];
+  const kindLabel = { 부: "부(父)", 모: "모(母)" }[c.kind] || c.kind;
+  caption.textContent = `${kindLabel}${c.slot ? " " + c.slot : ""} · ① 강림`;
+  setGlow(seq[0]);
+  stage.classList.add("descending");
+  await sleep(850);
+  stage.classList.remove("descending");
+  caption.textContent = caption.textContent.replace("① 강림", "② 균열");
+  crackPaths(CRACKS[seq[0]] || 1);
+  stage.classList.add("lit", "shake");
+  await sleep(1050);
+  stage.classList.remove("shake");
+  for (let i = 1; i < seq.length; i++) {
+    const nf = seq[i];
+    if (nf === "비정상") {
+      caption.textContent = caption.textContent.replace(/② 균열|③ \S+/, "③ 반전");
+      stage.classList.add("inverted");
+      // 미세: 흰 알, 물에는 검은 알 / 뚜렷·세계급: 검은 알, 물에는 흰 알
+      if (c.s === 0) eggR.classList.add("dark"); else egg.classList.add("dark");
+      setGlow("비정상");
+      await sleep(700);
+      if (c.s === 2) stage.classList.add("tilted");
+      await sleep(400);
+      stage.classList.remove("inverted");
+    } else if (["실패", "재앙"].includes(nf)) {
+      caption.textContent = caption.textContent.replace(/② 균열/, "③ 강등");
+      stage.classList.remove("lit");
+      await sleep(600);
+      setGlow(nf);
+      if (nf === "재앙") stage.classList.add("lit");
+    } else {
+      caption.textContent = caption.textContent.replace(/② 균열|③ 승급/, "③ 승급");
+      setGlow(nf);
+      crackPaths(CRACKS[nf]);
+      stage.classList.add("flashing", "bright");
+      await sleep(650);
+      stage.classList.remove("flashing");
+    }
+  }
+  caption.textContent = caption.textContent.replace(/[②③] \S+/, "④ 개화");
+  if (fam === "재앙") { egg.classList.add("burnt"); stage.classList.add("lit"); await sleep(500); }
+  if (fam === "실패") { egg.classList.add("dull"); stage.classList.add("fall"); await sleep(800); }
+  if (fam === "신화") { stage.classList.add("myth"); await sleep(600); }
+  if (GOOD.has(fam)) { stage.classList.add("flashing", "bright"); stage.classList.add("burst"); await sleep(450); }
+  resultImg.src = imgOf(c.fam, c.s);
+  resultImg.alt = `${c.fam} ${subName(c.fam, c.s)} 단계 이미지`;
+  stage.classList.remove("tilted");
+  stage.classList.add("revealed");
+  caption.textContent = "";
+  await sleep(c.s === 2 && fam !== "비정상" ? 500 : 150);
+}
+
+function showCard(c) {
+  const el = $("card");
+  el.classList.remove("empty");
+  el.textContent = cardText(c);
+  el.style.setProperty("--tc", cssColor(c.fam));
+  $("cardTitle").textContent = `결과 카드 · ${c.fam}·${subName(c.fam, c.s)}`;
+}
+
+// ───────────────────────── 인생 진행
+async function run(list) {
+  if (S.busy) return;
+  S.busy = true; render();
+  for (const [kind, slot, birth] of list) {
+    const c = drawOne(kind, slot, birth);
+    render();
+    await perform(c);
+    showCard(c);
+    save(); render();
+    await sleep(list.length > 1 ? 900 : 0);
+  }
+  S.busy = false; save(); render();
+}
+function startBirth() {
+  const birth = { i: 0, good: false, calamity: false };
+  S.birthDone = true; S.stage = 0;
+  run([["부", "", birth], ["모", "", birth], ["재능", "1/3", birth], ["재능", "2/3", birth], ["재능", "3/3", birth]])
+    .then(() => { S.stage = 1; save(); render(); });
+}
+function growth(kind) {
+  const name = STAGES[S.stage];
+  run([[kind, `· ${name}`, null]]).then(() => { S.stage = Math.min(5, S.stage + 1); save(); render(); });
+}
+function bokPull(kind) {
+  if (S.bok < 100) return;
+  S.bok -= 100;
+  run([[kind, "· 복 뽑기", null]]);
+}
+function overcome(id) {
+  const c = [...S.parents, ...S.talents, ...S.bonds].find(x => x.id === id);
+  if (!c || c.overcome) return;
+  c.overcome = true;
+  if (c.kind === "재능") {
+    const nf = c.fam === "실패" ? "준수" : "희귀";
+    c.fam = nf; c.step = stepOf(nf, c.s);
+  } else if (c.e.h) c.e.h = clamp(c.e.h + 2, 1, 5);
+  S.log.unshift(`극복 — ${c.e.n || c.e.j || c.e.r} 카드가 뒤집혔다`);
+  save(); render(); showCard(c);
+}
+
+// ───────────────────────── 화면 그리기
+let uid = 0;
+function itemHTML(c) {
+  if (!c.id) c.id = "c" + (++uid) + "_" + Date.now();
+  const e = c.e;
+  const title = c.kind === "재능" ? e.n : c.kind === "인연" ? `${e.name} · ${e.r}` : `${{ 부: "아빠", 모: "엄마" }[c.kind]} · ${e.j}`;
+  const sub = c.fam === "비정상" ? `🌀 ${e.eff}` : (e.d || "");
+  const chip = c.fam === "비정상" ? `비정상·${subName(c.fam, c.s)}` : `${c.fam}·${subName(c.fam, c.s)} ${c.step}`;
+  const canFix = (c.fam === "실패" || c.fam === "재앙") && !c.overcome && e.fix;
+  return `<div class="item" style="--tc:${cssColor(c.fam)}"><span class="chip">${chip}</span>
+    <div class="t"><strong>${esc(title)}</strong>${c.awakened ? " ✦" : ""}${c.overcome ? " 🔓" : ""}<small>${esc(sub)}${canFix ? `<br>🔓 극복: ${esc(e.fix)}` : ""}</small></div>
+    <span class="row">${canFix ? `<button class="small" data-fix="${c.id}" type="button">극복</button>` : ""}<button class="small ghost" data-show="${c.id}" type="button">카드</button></span></div>`;
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch])); }
+function render() {
+  $("gVal").textContent = `${S.g}/10`;
+  $("gauge").innerHTML = Array.from({ length: 10 }, (_, i) => `<i class="${i < S.g ? "on" : ""}"></i>`).join("");
+  $("pityVal").textContent = 40 - S.topMiss;
+  $("bokVal").textContent = S.bok;
+  $("life").innerHTML = STAGES.map((n, i) => {
+    const cls = !S.birthDone && i === 0 ? "now" : (i < S.stage || (i === 0 && S.stage >= 1)) ? "done" : (i === S.stage ? "now" : "");
+    return `<span class="${cls}">${n}</span>`;
+  }).join("") + `<span class="${S.stage >= 5 ? "now" : ""}">복 뽑기</span>`;
+  const A = $("actions");
+  const dis = S.busy ? "disabled" : "";
+  if (!S.birthDone) A.innerHTML = `<button class="primary" id="aBirth" ${dis} type="button">출생 5연차 — 부·모·재능 3</button>`;
+  else if (S.stage >= 1 && S.stage <= 4) A.innerHTML = `<span class="note">${STAGES[S.stage]} 가챠</span><button class="primary" data-grow="재능" ${dis} type="button">재능 뽑기</button><button class="primary" data-grow="인연" ${dis} type="button">인연 뽑기</button>`;
+  else if (S.stage >= 5) A.innerHTML = `<span class="note">성장 가챠 끝. 이제 복으로만 뽑는다.</span>`;
+  else A.innerHTML = `<span class="note">출생 연출 진행 중…</span>`;
+  if (S.birthDone && S.stage >= 1) A.innerHTML += `<button data-bok="재능" ${S.bok < 100 || S.busy ? "disabled" : ""} type="button">복 100 → 재능</button><button data-bok="인연" ${S.bok < 100 || S.busy ? "disabled" : ""} type="button">복 100 → 인연</button>`;
+  $("bokBtn").disabled = S.busy || !S.birthDone;
+  $("parents").innerHTML = S.parents.length ? S.parents.map(itemHTML).join("") : `<span class="none">출생 5연차에서 정해진다.</span>`;
+  $("talents").innerHTML = S.talents.length ? S.talents.map(itemHTML).join("") : `<span class="none">아직 없다.</span>`;
+  $("bonds").innerHTML = S.bonds.length ? S.bonds.map(itemHTML).join("") : `<span class="none">성장 가챠에서 인연을 고르면 생긴다.</span>`;
+  $("log").innerHTML = S.log.length ? S.log.map(l => `<span>${esc(l)}</span>`).join("") : `<span>아직 굴림이 없다.</span>`;
+}
+
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("button");
+  if (!t) return;
+  if (t.id === "aBirth") startBirth();
+  else if (t.dataset.grow) growth(t.dataset.grow);
+  else if (t.dataset.bok) bokPull(t.dataset.bok);
+  else if (t.dataset.fix) overcome(t.dataset.fix);
+  else if (t.dataset.show) {
+    const c = [...S.parents, ...S.talents, ...S.bonds].find(x => x.id === t.dataset.show);
+    if (c) { showCard(c); resetStage(); setGlow(c.fam); resultImg.src = imgOf(c.fam, c.s); stage.classList.add("revealed"); }
+  }
+});
+$("bokBtn").addEventListener("click", () => { S.bok += 20; S.log.unshift("선행·극복 — 복 +20"); save(); render(); });
+$("resetBtn").addEventListener("click", () => { $("resetConfirm").hidden = false; });
+$("resetNo").addEventListener("click", () => { $("resetConfirm").hidden = true; });
+$("resetYes").addEventListener("click", () => {
+  S = fresh(); save(); resetStage(); $("resetConfirm").hidden = true;
+  const el = $("card"); el.className = "card empty"; el.textContent = "새 인생. '출생 5연차'를 눌러 알을 부른다."; $("cardTitle").textContent = "결과 카드";
+  render();
+});
+$("copyBtn").addEventListener("click", async () => {
+  const el = $("card"), b = $("copyBtn");
+  try { await navigator.clipboard.writeText(el.textContent); b.textContent = "복사했다"; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "선택했다 — Ctrl+C"; }
+  setTimeout(() => b.textContent = "카드 텍스트 복사", 1600);
+});
+
+// ───────────────────────── 확률 검증
+function simulate(n) {
+  const cnt = Object.fromEntries(ORDER.map(k => [k, 0]));
+  let tot = 0;
+  for (let p = 0; p < n; p++) {
+    const st = { g: 0, topMiss: 0, bok: 0 };
+    const b = { i: 0, good: false, calamity: false };
+    for (let i = 0; i < 5; i++) { cnt[rollCard(st, b).fam]++; tot++; }
+    for (let i = 0; i < 4; i++) { cnt[rollCard(st, null).fam]++; tot++; }
+  }
+  return ORDER.map(k => [k, cnt[k] / tot * 100]);
+}
+function drawSim(rows) {
+  const max = Math.max(...rows.map(r => Math.max(r[1], EXPECT[r[0]])));
+  $("simTable").querySelector("tbody").innerHTML = [...rows].reverse().map(([k, v]) => `<tr style="--tc:${cssColor(k)}"><td>${k}</td><td class="num">${EXPECT[k].toFixed(2)}%</td><td class="num">${v === null ? "—" : v.toFixed(2) + "%"}</td><td><div class="bar" style="width:${((v ?? EXPECT[k]) / max * 100).toFixed(1)}%;opacity:${v === null ? .35 : 1}"></div></td></tr>`).join("");
+}
+$("simBtn").addEventListener("click", () => {
+  $("simBtn").disabled = true; $("simBtn").textContent = "굴리는 중…";
+  setTimeout(() => { drawSim(simulate(5000)); $("simBtn").disabled = false; $("simBtn").textContent = "5,000명 더 굴려 보기"; }, 30);
+});
+
+drawSim(ORDER.map(k => [k, null]));
+render();
+// 이전 인생이 남아 있으면 마지막 카드를 보여 준다
+(() => {
+  const all = [...S.parents, ...S.talents, ...S.bonds];
+  if (all.length) { const c = all[all.length - 1]; showCard(c); setGlow(c.fam); resultImg.src = imgOf(c.fam, c.s); stage.classList.add("revealed"); }
+  else { setGlow("정상"); resultImg.src = imgOf("정상", 1); resultImg.alt = "정상 중 단계 이미지"; stage.classList.add("revealed"); }
+})();
+</script>
