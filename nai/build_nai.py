@@ -30,7 +30,7 @@ STYLE = (
 )
 
 NEG = (
-    "nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, "
+    "nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, border, frame, "
     "blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, dated, artistic error, "
     "scan artifacts, jpeg artifacts, upscaled, aliasing, film grain, heavy film grain, dithering, chromatic aberration, "
     "digital dissolve, halftone, screentones, artist:xinzoruo, artist:milkpanda, artist:kurukurumagica, artist collaboration, "
@@ -43,7 +43,7 @@ NEG = (
 )
 
 CHAR_NEG = (
-    "multiple people, bad proportions, deformed, disfigured, worst quality, bad quality, very displeasing, displeasing, "
+    "multiple people, 1.5::large breasts, huge breasts::, bad proportions, deformed, disfigured, worst quality, bad quality, very displeasing, displeasing, "
     "lowres, error, artistic error, bad anatomy, bad perspective, bad face, bad teeth, bad neck, bad arm, bad hands, "
     "bad leg, bad feet, extra faces, extra eyes, extra eyebrows, extra mouth, extra ears, extra arms, extra hands, "
     "extra legs, extra digits, missing limb, missing finger, wrong hand, mutation, unfinished, jpeg artifacts, "
@@ -69,21 +69,21 @@ EXPR = {
 }
 
 UNI_MID_M = "korean school uniform, navy blazer, white collared shirt, navy tie, grey pants"
-UNI_MID_F = "korean school uniform, navy blazer, white collared shirt, navy ribbon, plaid skirt, black knee socks"
+UNI_MID_F = "korean school uniform, navy blazer, white collared shirt, navy ribbon, knee-length plaid skirt, white socks"
 UNI_HIGH_M = "korean school uniform, charcoal grey blazer, white collared shirt, red tie, grey pants"
 UNI_HIGH_F = "korean school uniform, charcoal grey blazer, white collared shirt, red ribbon, grey plaid skirt"
-MAGPIE = "1.2::magpie, black and white bird, long tail, iridescent blue-green feathers::"
+MAGPIE = "1.3::oriental magpie, black head, black breast, white belly, white shoulder patches, long iridescent blue-green tail::"
 
 # (키, 한글 이름, 크랙 이미지 키워드 예시, 인원 태그, 캐릭터, 기본 표정, 장면·구도, 종류)  종류: adult / child / scene
 ENTRIES = {
     "주인공 ({user}) — 나이별": [
         ("p_baby", "아기 (0세)", "{user}·아기", "solo", "baby, infant, newborn, tiny, chubby cheeks, short black hair, wrapped in white swaddling blanket", "잠", "hospital nursery, bassinet, soft morning light, close-up, from above", "child"),
         ("p_toddler_m", "어린이집 (3세·남)", "{user}·3세", "1boy, solo", "toddler, boy, 1.2::short black hair::, round face, chubby cheeks, dark brown eyes, yellow hoodie, denim overalls, small backpack, name tag", "활짝", "daycare playroom, toys, colorful floor mats, daylight, full body", "child"),
-        ("p_toddler_f", "어린이집 (3세·여)", "{user}·3세", "1girl, solo", "toddler, girl, black hair, short pigtails, round face, chubby cheeks, dark brown eyes, pink jacket, leggings, small backpack, name tag", "활짝", "daycare playroom, toys, colorful floor mats, daylight, full body", "child"),
+        ("p_toddler_f", "어린이집 (3세·여)", "{user}·3세", "1girl, solo", "toddler, girl, standing, black hair, short pigtails, round face, chubby cheeks, dark brown eyes, pink jacket, leggings, small backpack, name tag", "활짝", "daycare playroom, toys, colorful floor mats, daylight, full body", "child"),
         ("p_kinder_m", "유치원 (6세·남)", "{user}·6세", "1boy, solo", "child, boy, short black hair, dark brown eyes, navy sweatshirt, khaki pants, sneakers, kindergarten bag", "기본", "kindergarten classroom, crayons, drawings on wall, daylight, full body", "child"),
         ("p_kinder_f", "유치원 (6세·여)", "{user}·6세", "1girl, solo", "child, girl, black hair, low twintails, dark brown eyes, yellow cardigan, white blouse, skirt, sneakers, kindergarten bag", "기본", "kindergarten classroom, crayons, drawings on wall, daylight, full body", "child"),
         ("p_elem_m", "초등학생 (10세·남)", "{user}·초등", "1boy, solo", "child, boy, elementary school student, short black hair, messy hair, dark brown eyes, grey hoodie, jeans, school backpack", "기본", "elementary school classroom, wooden desks, blackboard, daylight, cowboy shot", "child"),
-        ("p_elem_f", "초등학생 (10세·여)", "{user}·초등", "1girl, solo", "child, girl, elementary school student, black hair, bob cut, dark brown eyes, striped t-shirt, denim skirt, school backpack", "기본", "elementary school classroom, wooden desks, blackboard, daylight, cowboy shot", "child"),
+        ("p_elem_f", "초등학생 (10세·여)", "{user}·초등", "1girl, solo", "child, girl, elementary school student, black hair, bob cut, dark brown eyes, striped t-shirt, jeans, school backpack", "기본", "elementary school classroom, wooden desks, blackboard, daylight, cowboy shot", "child"),
         ("p_mid_m", "중학생 (15세·남)", "{user}·중학생", "1boy, solo", f"teenage, boy, middle school student, black hair, short hair, dark brown eyes, {UNI_MID_M}", "무표정", "middle school classroom, window, daylight, cowboy shot", "child"),
         ("p_mid_f", "중학생 (15세·여)", "{user}·중학생", "1girl, solo", f"teenage, girl, middle school student, black hair, shoulder-length hair, dark brown eyes, {UNI_MID_F}", "무표정", "middle school classroom, window, daylight, cowboy shot", "child"),
         ("p_high_m", "고등학생 (18세·남)", "{user}·고등학생", "1boy, solo", f"teenage, boy, high school student, black hair, short hair, dark brown eyes, {UNI_HIGH_M}", "지침", "classroom at night, self-study, desk lamp, stacked workbooks, cowboy shot", "child"),
@@ -94,7 +94,7 @@ ENTRIES = {
         ("p_adult_f", "성인 (30세·여)", "{user}·성인", "1girl, solo", "adult, woman, 30s, black hair, medium hair, dark brown eyes, white blouse, navy slacks, lanyard", "진지", "office, evening, city view window, cowboy shot", "adult"),
     ],
     "가족": [
-        ("mom_warm", "엄마 · 다정 (정상·준수)", "엄마", "1girl, solo", "adult, woman, 30s, mother, dark brown hair, low ponytail, gentle eyes, brown eyes, cream knit sweater, apron", "기본", "home kitchen, morning light, steam from pot, cowboy shot", "adult"),
+        ("mom_warm", "엄마 · 다정 (정상·준수)", "엄마", "1girl, solo", "adult, woman, 30s, mother, dark brown hair, low ponytail, gentle eyes, brown eyes, loose cream knit sweater, apron, facing viewer", "기본", "home kitchen, morning light, steam from pot, upper body", "adult"),
         ("mom_career", "엄마 · 바쁜 커리어 (희귀·전설)", "엄마", "1girl, solo", "adult, woman, 30s, mother, black hair, neat bob cut, brown eyes, white coat, doctor, stethoscope, id card", "진지", "hospital corridor, bright fluorescent light, cowboy shot", "adult"),
         ("mom_tired", "엄마 · 지친 (실패·재앙)", "엄마", "1girl, solo", "adult, woman, 30s, mother, dark brown hair, messy bun, dark circles, brown eyes, grey zip-up hoodie, holding plastic grocery bag", "지침", "small apartment kitchen, night, single light bulb, cowboy shot", "adult"),
         ("dad_warm", "아빠 · 다정 (정상·준수)", "아빠", "1boy, solo", "adult, man, 30s, father, short black hair, kind eyes, brown eyes, delivery uniform, cap", "활짝", "apartment entrance, evening, delivery boxes, cowboy shot", "adult"),
@@ -114,8 +114,8 @@ ENTRIES = {
         ("ab_moon", "달 (이불을 덮어 주는 달)", "달", "1girl, solo", "moon spirit, personification, ethereal woman, long silver hair, softly glowing skin, crescent moon hair ornament, flowing white robe, floating", "기본", "bedroom at night, open window, moonlight streaming in, blanket, quiet, cowboy shot", "adult"),
         ("ab_shadow", "그림자가 따로 움직이는 아이 (비정상 재능)", "비정상·그림자", "1boy, solo", "child, boy, short black hair, black eyes, school backpack, standing still, 1.3::his shadow waving on its own, detached shadow::", "놀람", "sidewalk, sunset, long shadows, full body", "child"),
         ("ab_gravity", "중력이 절반인 아이 (비정상 재능)", "비정상·중력", "1girl, solo", "child, girl, black hair, bob cut, black eyes, school clothes, 1.3::pencils and books floating around her, hair floating::", "놀람", "elementary school classroom, daylight, full body", "child"),
-        ("ab_rain", "비가 피해 가는 아이 (비정상 재능)", "비정상·비", "1boy, solo", "child, boy, short black hair, black eyes, dry clothes, no umbrella, 1.3::rain falling around him but not on him::", "기본", "street, heavy rain, overcast, puddles, full body", "child"),
-        ("ab_crows", "새의 말을 알아듣는 아이 (비정상 재능)", "비정상·새", "1girl, solo", "child, girl, black hair, low twintails, black eyes, school backpack, looking up, listening, hand cupped to ear", "놀람", "after school, power lines, 1.2::crows perched on power lines, thick beaks, black feathers::, afternoon, from below", "child"),
+        ("ab_rain", "비가 피해 가는 아이 (비정상 재능)", "비정상·비", "1boy, solo", "child, boy, short black hair, black eyes, white t-shirt, shorts, dry clothes, 1.4::raindrops stopping in midair around him, dry circle on the ground around him::", "기본", "street, heavy rain, overcast, puddles, full body", "child"),
+        ("ab_crows", "새의 말을 알아듣는 아이 (비정상 재능)", "비정상·새", "1girl, solo", "child, girl, elementary school student, black hair, low twintails, black eyes, white t-shirt, overalls, red school backpack, looking up, listening, hand cupped to ear", "놀람", "after school, power lines, 1.2::crows perched on power lines, thick beaks, black feathers::, afternoon, from below", "child"),
     ],
     "친구 — 시기별": [
         ("f_daycare_m", "어린이집 친구 (남)", "어린이집 친구", "1boy, solo", "toddler, boy, dark brown hair, bowl cut, round face, chubby cheeks, black eyes, dinosaur t-shirt, shorts", "활짝", "daycare playroom, building blocks, daylight, full body", "child"),
@@ -138,15 +138,15 @@ ENTRIES = {
         ("lover_f", "연인 (여·성인)", "연인", "1girl, solo", "adult, woman, late 20s, dark brown hair, long wavy hair, gentle eyes, beige coat, scarf", "부끄러움", "han river park, sunset, evening, cowboy shot", "adult"),
     ],
     "선생님 · 동네 어른": [
-        ("t_daycare", "어린이집 선생님", "어린이집 선생님", "1girl, solo", "adult, woman, 20s, daycare teacher, dark brown hair, ponytail, gentle eyes, pink apron, name tag", "활짝", "daycare playroom, picture books, daylight, cowboy shot", "adult"),
+        ("t_daycare", "어린이집 선생님", "어린이집 선생님", "1girl, solo", "adult, woman, 20s, daycare teacher, dark brown hair, ponytail, gentle eyes, loose sweatshirt, pink apron, name tag, facing viewer", "활짝", "daycare playroom, picture books, daylight, upper body", "adult"),
         ("t_kinder", "유치원 선생님", "유치원 선생님", "1boy, solo", "adult, man, 20s, kindergarten teacher, short black hair, round glasses, gentle eyes, green apron, holding picture book", "활짝", "kindergarten classroom, small chairs, daylight, cowboy shot", "adult"),
         ("t_elem", "초등학교 담임", "초등 담임", "1girl, solo", "adult, woman, 30s, elementary school teacher, black hair, bob cut, kind eyes, cardigan, long skirt, holding attendance book", "기본", "elementary school classroom, blackboard, morning light, cowboy shot", "adult"),
         ("t_mid", "중학교 담임", "중학교 담임", "1boy, solo", "adult, man, 40s, middle school teacher, short black hair, receding hairline, tired eyes, navy polo shirt, holding coffee tumbler", "지침", "teachers office, desks with papers, afternoon, cowboy shot", "adult"),
         ("t_high", "고등학교 담임", "고등학교 담임", "1girl, solo", "adult, woman, 40s, high school teacher, black hair, neat low bun, rimless glasses, black blazer, holding exam papers", "진지", "high school classroom, blackboard with exam schedule, cowboy shot", "adult"),
         ("t_academy", "학원 선생님", "학원 선생님", "1boy, solo", "adult, man, 30s, cram school teacher, messy black hair, dark circles, black hoodie, holding marker", "진지", "cram school classroom, night, whiteboard full of math equations, cowboy shot", "adult"),
         ("t_pe", "체육 선생님 · 코치", "코치", "1boy, solo", "adult, man, 30s, pe teacher, coach, short black hair, tan skin, tracksuit, whistle around neck, holding stopwatch", "활짝", "school track field, sunny, cowboy shot", "adult"),
-        ("t_librarian", "사서 선생님", "사서 선생님", "1girl, solo", "adult, woman, 50s, librarian, grey streaked hair, low bun, reading glasses on chain, cardigan, holding book", "기본", "school library, bookshelves, afternoon sunlight, cowboy shot", "adult"),
-        ("neighbor_grandma", "옆집 할머니", "옆집 할머니", "1girl, solo, old woman", "old woman, elderly, 70s, short curly grey hair, floral pattern pants, padded vest, holding container of kimchi", "활짝", "apartment hallway, front door, daylight, cowboy shot", "adult"),
+        ("t_librarian", "사서 선생님", "사서 선생님", "1girl, solo", "mature female, middle-aged woman, 50s, librarian, wrinkles, grey streaked hair, low bun, reading glasses on chain, cardigan, holding book", "기본", "school library, bookshelves, afternoon sunlight, cowboy shot", "adult"),
+        ("neighbor_grandma", "옆집 할머니", "옆집 할머니", "1girl, solo, old woman", "1.3::old woman, elderly, wrinkled face::, 70s, short stature, short curly grey hair, floral pattern pants, padded vest, holding container of kimchi", "활짝", "apartment hallway, front door, daylight, cowboy shot", "adult"),
         ("cvs_staff", "편의점 알바 형", "편의점 형", "1boy, solo", "young adult, man, 20s, convenience store clerk, dark brown hair, tired smile, convenience store uniform, vest, name tag", "기본", "convenience store counter, night, cowboy shot", "adult"),
         ("boss", "직장 상사", "상사", "1girl, solo", "adult, woman, 40s, manager, short black hair, sharp eyes, grey suit, holding documents", "진지", "office meeting room, daylight, cowboy shot", "adult"),
     ],
@@ -156,7 +156,7 @@ ENTRIES = {
         ("s_egg", "알 강림", "알", "no humans", "", "", "single glowing egg descending from ceiling, light rays, hospital room, dawn, ethereal, magical", "scene"),
         ("s_home_normal", "집 · 평범", "집", "no humans", "", "", "korean apartment living room, sofa, tv, children's drawings on fridge, evening, warm lighting", "scene"),
         ("s_home_rich", "집 · 넉넉 (재력 높음)", "집·넉넉", "no humans", "", "", "luxurious modern house living room, high ceiling, grand piano, large windows, city night view", "scene"),
-        ("s_home_poor", "집 · 단칸방 (재력 낮음)", "집·단칸방", "no humans", "", "", "small one-room home, folded bedding on floor, red seizure stickers on furniture, single light bulb, night, rain on window", "scene"),
+        ("s_home_poor", "집 · 단칸방 (재력 낮음)", "집·단칸방", "no humans", "", "", "korean semi-basement room, small high window at street level, rain on window, peeling wallpaper, folded bedding on floor, red seizure stickers on furniture, single light bulb, night", "scene"),
         ("s_daycare", "어린이집", "어린이집", "no humans", "", "", "daycare playroom, colorful floor mats, toys, small chairs, morning light", "scene"),
         ("s_kindergarten", "유치원", "유치원", "no humans", "", "", "kindergarten classroom, crayons, children's drawings on wall, small tables, daylight", "scene"),
         ("s_elem_class", "초등학교 교실", "초등 교실", "no humans", "", "", "korean elementary school classroom, wooden desks, blackboard, flower pot on windowsill, morning light", "scene"),
@@ -171,7 +171,7 @@ ENTRIES = {
         ("s_office_night", "야근 사무실", "사무실", "no humans", "", "", "office at night, empty desks, monitors on, city night view, blinds", "scene"),
         ("s_highway", "명절 고속도로", "명절", "no humans", "", "", "highway traffic jam, holiday, car tail lights, sunset, long line of cars", "scene"),
         ("s_hospital", "병실", "병실", "no humans", "", "", "hospital room, bed, iv stand, window, afternoon, quiet", "scene"),
-        ("s_academy_street", "학원가 밤거리", "학원가", "no humans", "", "", "cram school district at night, buildings with lit windows, parked bicycles, wet street, fluorescent light", "scene"),
+        ("s_academy_street", "학원가 밤거리", "학원가", "no humans", "", "", "korean city street at night, buildings covered with illuminated signboards, cram school district, lit windows, parked bicycles, wet street", "scene"),
         ("s_cvs_night", "편의점 앞 밤", "편의점", "no humans", "", "", "convenience store at night, exterior, plastic tables outside, light spilling onto street", "scene"),
         ("s_magpie_pole", "전봇대 까치 (까치 아빠 평소 모습)", "아빠·까치(평소)", "no humans", "", "", f"{MAGPIE} perched on utility pole, power lines, apartment complex, morning", "scene"),
         ("s_crows", "전깃줄 까마귀", "까마귀", "no humans", "", "", "1.2::crows perched on power lines, thick beaks, black feathers::, after school, afternoon sky", "scene"),

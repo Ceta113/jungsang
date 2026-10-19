@@ -16,11 +16,11 @@ NovelAI V5 Full 기준. 사용자 config(캐릭터_이미지생성)의 화풍을
 ```
 ## 공통 네거 (Undesired Content)
 ```
-nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, dated, artistic error, scan artifacts, jpeg artifacts, upscaled, aliasing, film grain, heavy film grain, dithering, chromatic aberration, digital dissolve, halftone, screentones, artist:xinzoruo, artist:milkpanda, artist:kurukurumagica, artist collaboration, one-hour drawing challenge, toon (style), 1990s (style), 4koma, 2koma, mutation, deformed, distorted, disfigured, bad anatomy, unnatural hair, bad face, mob face, bad eyes, empty eyes, bad proportions, bad limbs, amputee, bad arm, bad hands, bad hand structure, extra digits, fewer digits, bad leg, extra leg, distorted composition, bad perspective, multiple views, disorganized colors, unfinished, incomplete, displeasing, very displeasing, unsatisfactory, inadequate, deficient, subpar, poor, blurry, lowres, worst quality, bad quality, fewer details, sketch, sketch lines, jaggy lines, rough lines, multiple others, outline, outer glow, white pupils, colored inner hair, saturated
+nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, border, frame, blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, dated, artistic error, scan artifacts, jpeg artifacts, upscaled, aliasing, film grain, heavy film grain, dithering, chromatic aberration, digital dissolve, halftone, screentones, artist:xinzoruo, artist:milkpanda, artist:kurukurumagica, artist collaboration, one-hour drawing challenge, toon (style), 1990s (style), 4koma, 2koma, mutation, deformed, distorted, disfigured, bad anatomy, unnatural hair, bad face, mob face, bad eyes, empty eyes, bad proportions, bad limbs, amputee, bad arm, bad hands, bad hand structure, extra digits, fewer digits, bad leg, extra leg, distorted composition, bad perspective, multiple views, disorganized colors, unfinished, incomplete, displeasing, very displeasing, unsatisfactory, inadequate, deficient, subpar, poor, blurry, lowres, worst quality, bad quality, fewer details, sketch, sketch lines, jaggy lines, rough lines, multiple others, outline, outer glow, white pupils, colored inner hair, saturated
 ```
 ## 캐릭터 네거 (기본)
 ```
-multiple people, bad proportions, deformed, disfigured, worst quality, bad quality, very displeasing, displeasing, lowres, error, artistic error, bad anatomy, bad perspective, bad face, bad teeth, bad neck, bad arm, bad hands, bad leg, bad feet, extra faces, extra eyes, extra eyebrows, extra mouth, extra ears, extra arms, extra hands, extra legs, extra digits, missing limb, missing finger, wrong hand, mutation, unfinished, jpeg artifacts, watermark, signature, logo, dark nose, blurry, multiple views, comic, thick eyeliner, heavy makeup, bold lines, thick outlines
+multiple people, 1.5::large breasts, huge breasts::, bad proportions, deformed, disfigured, worst quality, bad quality, very displeasing, displeasing, lowres, error, artistic error, bad anatomy, bad perspective, bad face, bad teeth, bad neck, bad arm, bad hands, bad leg, bad feet, extra faces, extra eyes, extra eyebrows, extra mouth, extra ears, extra arms, extra hands, extra legs, extra digits, missing limb, missing finger, wrong hand, mutation, unfinished, jpeg artifacts, watermark, signature, logo, dark nose, blurry, multiple views, comic, thick eyeliner, heavy makeup, bold lines, thick outlines
 ```
 ## 아이·학생용 추가 네거 (캐릭터 네거 뒤에 붙음)
 ```
@@ -64,7 +64,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `{user}·3세` · 832×1216 · 기본 표정 활짝
 ```
 베이스: 1girl, solo, daycare playroom, toys, colorful floor mats, daylight, full body
-캐릭터: toddler, girl, black hair, short pigtails, round face, chubby cheeks, dark brown eyes, pink jacket, leggings, small backpack, name tag, smile, open mouth, happy, looking at viewer
+캐릭터: toddler, girl, standing, black hair, short pigtails, round face, chubby cheeks, dark brown eyes, pink jacket, leggings, small backpack, name tag, smile, open mouth, happy, looking at viewer
 캐릭터 네거: 기본 + 아이용
 ```
 
@@ -96,7 +96,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `{user}·초등` · 832×1216 · 기본 표정 기본
 ```
 베이스: 1girl, solo, elementary school classroom, wooden desks, blackboard, daylight, cowboy shot
-캐릭터: child, girl, elementary school student, black hair, bob cut, dark brown eyes, striped t-shirt, denim skirt, school backpack, light smile, closed mouth, looking at viewer
+캐릭터: child, girl, elementary school student, black hair, bob cut, dark brown eyes, striped t-shirt, jeans, school backpack, light smile, closed mouth, looking at viewer
 캐릭터 네거: 기본 + 아이용
 ```
 
@@ -112,7 +112,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `{user}·중학생` · 832×1216 · 기본 표정 무표정
 ```
 베이스: 1girl, solo, middle school classroom, window, daylight, cowboy shot
-캐릭터: teenage, girl, middle school student, black hair, shoulder-length hair, dark brown eyes, korean school uniform, navy blazer, white collared shirt, navy ribbon, plaid skirt, black knee socks, expressionless, closed mouth
+캐릭터: teenage, girl, middle school student, black hair, shoulder-length hair, dark brown eyes, korean school uniform, navy blazer, white collared shirt, navy ribbon, knee-length plaid skirt, white socks, expressionless, closed mouth
 캐릭터 네거: 기본 + 아이용
 ```
 
@@ -169,8 +169,8 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 ### 엄마 · 다정 (정상·준수) · `mom_warm`
 크랙 키워드: `엄마` · 832×1216 · 기본 표정 기본
 ```
-베이스: 1girl, solo, home kitchen, morning light, steam from pot, cowboy shot
-캐릭터: adult, woman, 30s, mother, dark brown hair, low ponytail, gentle eyes, brown eyes, cream knit sweater, apron, light smile, closed mouth, looking at viewer
+베이스: 1girl, solo, home kitchen, morning light, steam from pot, upper body
+캐릭터: adult, woman, 30s, mother, dark brown hair, low ponytail, gentle eyes, brown eyes, loose cream knit sweater, apron, facing viewer, light smile, closed mouth, looking at viewer
 캐릭터 네거: 기본
 ```
 
@@ -284,7 +284,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `아빠·까치` · 832×1216 · 기본 표정 기본
 ```
 베이스: 1boy, solo, apartment alley, utility pole, power lines, morning, cowboy shot
-캐릭터: adult, man, 30s, father, black hair with white streak, black suit, white shirt, iridescent blue-green necktie, gentle eyes, 1.2::magpie, black and white bird, long tail, iridescent blue-green feathers:: perched on shoulder, light smile, closed mouth, looking at viewer
+캐릭터: adult, man, 30s, father, black hair with white streak, black suit, white shirt, iridescent blue-green necktie, gentle eyes, 1.3::oriental magpie, black head, black breast, white belly, white shoulder patches, long iridescent blue-green tail:: perched on shoulder, light smile, closed mouth, looking at viewer
 캐릭터 네거: 기본
 ```
 
@@ -316,7 +316,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `비정상·비` · 832×1216 · 기본 표정 기본
 ```
 베이스: 1boy, solo, street, heavy rain, overcast, puddles, full body
-캐릭터: child, boy, short black hair, black eyes, dry clothes, no umbrella, 1.3::rain falling around him but not on him::, light smile, closed mouth, looking at viewer
+캐릭터: child, boy, short black hair, black eyes, white t-shirt, shorts, dry clothes, 1.4::raindrops stopping in midair around him, dry circle on the ground around him::, light smile, closed mouth, looking at viewer
 캐릭터 네거: 기본 + 아이용
 ```
 
@@ -324,7 +324,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `비정상·새` · 832×1216 · 기본 표정 놀람
 ```
 베이스: 1girl, solo, after school, power lines, 1.2::crows perched on power lines, thick beaks, black feathers::, afternoon, from below
-캐릭터: child, girl, black hair, low twintails, black eyes, school backpack, looking up, listening, hand cupped to ear, surprised, wide eyes, open mouth
+캐릭터: child, girl, elementary school student, black hair, low twintails, black eyes, white t-shirt, overalls, red school backpack, looking up, listening, hand cupped to ear, surprised, wide eyes, open mouth
 캐릭터 네거: 기본 + 아이용
 ```
 
@@ -390,7 +390,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `중학교 친구` · 832×1216 · 기본 표정 기본
 ```
 베이스: 1girl, solo, school hallway, lockers, daylight, cowboy shot
-캐릭터: teenage, girl, middle school student, dark brown hair, short hair, hair clip, black eyes, korean school uniform, navy blazer, white collared shirt, navy ribbon, plaid skirt, black knee socks, light smile, closed mouth, looking at viewer
+캐릭터: teenage, girl, middle school student, dark brown hair, short hair, hair clip, black eyes, korean school uniform, navy blazer, white collared shirt, navy ribbon, knee-length plaid skirt, white socks, light smile, closed mouth, looking at viewer
 캐릭터 네거: 기본 + 아이용
 ```
 
@@ -479,8 +479,8 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 ### 어린이집 선생님 · `t_daycare`
 크랙 키워드: `어린이집 선생님` · 832×1216 · 기본 표정 활짝
 ```
-베이스: 1girl, solo, daycare playroom, picture books, daylight, cowboy shot
-캐릭터: adult, woman, 20s, daycare teacher, dark brown hair, ponytail, gentle eyes, pink apron, name tag, smile, open mouth, happy, looking at viewer
+베이스: 1girl, solo, daycare playroom, picture books, daylight, upper body
+캐릭터: adult, woman, 20s, daycare teacher, dark brown hair, ponytail, gentle eyes, loose sweatshirt, pink apron, name tag, facing viewer, smile, open mouth, happy, looking at viewer
 캐릭터 네거: 기본
 ```
 
@@ -536,7 +536,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `사서 선생님` · 832×1216 · 기본 표정 기본
 ```
 베이스: 1girl, solo, school library, bookshelves, afternoon sunlight, cowboy shot
-캐릭터: adult, woman, 50s, librarian, grey streaked hair, low bun, reading glasses on chain, cardigan, holding book, light smile, closed mouth, looking at viewer
+캐릭터: mature female, middle-aged woman, 50s, librarian, wrinkles, grey streaked hair, low bun, reading glasses on chain, cardigan, holding book, light smile, closed mouth, looking at viewer
 캐릭터 네거: 기본
 ```
 
@@ -544,7 +544,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 크랙 키워드: `옆집 할머니` · 832×1216 · 기본 표정 활짝
 ```
 베이스: 1girl, solo, old woman, apartment hallway, front door, daylight, cowboy shot
-캐릭터: old woman, elderly, 70s, short curly grey hair, floral pattern pants, padded vest, holding container of kimchi, smile, open mouth, happy, looking at viewer
+캐릭터: 1.3::old woman, elderly, wrinkled face::, 70s, short stature, short curly grey hair, floral pattern pants, padded vest, holding container of kimchi, smile, open mouth, happy, looking at viewer
 캐릭터 네거: 기본
 ```
 
@@ -599,7 +599,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 ### 집 · 단칸방 (재력 낮음) · `s_home_poor`
 크랙 키워드: `집·단칸방` · 1216×832
 ```
-베이스: no humans, small one-room home, folded bedding on floor, red seizure stickers on furniture, single light bulb, night, rain on window
+베이스: no humans, korean semi-basement room, small high window at street level, rain on window, peeling wallpaper, folded bedding on floor, red seizure stickers on furniture, single light bulb, night
 ```
 
 ### 어린이집 · `s_daycare`
@@ -689,7 +689,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 ### 학원가 밤거리 · `s_academy_street`
 크랙 키워드: `학원가` · 1216×832
 ```
-베이스: no humans, cram school district at night, buildings with lit windows, parked bicycles, wet street, fluorescent light
+베이스: no humans, korean city street at night, buildings covered with illuminated signboards, cram school district, lit windows, parked bicycles, wet street
 ```
 
 ### 편의점 앞 밤 · `s_cvs_night`
@@ -701,7 +701,7 @@ makeup, lipstick, mature female, mature male, adult, older, revealing clothes, s
 ### 전봇대 까치 (까치 아빠 평소 모습) · `s_magpie_pole`
 크랙 키워드: `아빠·까치(평소)` · 1216×832
 ```
-베이스: no humans, 1.2::magpie, black and white bird, long tail, iridescent blue-green feathers:: perched on utility pole, power lines, apartment complex, morning
+베이스: no humans, 1.3::oriental magpie, black head, black breast, white belly, white shoulder patches, long iridescent blue-green tail:: perched on utility pole, power lines, apartment complex, morning
 ```
 
 ### 전깃줄 까마귀 · `s_crows`

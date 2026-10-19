@@ -1,2 +1,4 @@
 __pycache__/
 art/out/_*.png
+nai/raw/
+nai/images/*.png
