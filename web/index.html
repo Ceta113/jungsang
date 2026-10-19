@@ -154,6 +154,26 @@ textarea.out { width: 100%; min-height: 220px; color: var(--ink); resize: vertic
         </div>
         <pre class="card empty" id="card">아직 알이 내려오지 않았다. 오른쪽에서 '출생 5연차'를 눌러 인생을 시작한다.</pre>
       </div>
+      <div class="panel" id="crackPanel">
+        <div class="row">
+          <h2>크랙에 붙일 텍스트</h2>
+          <span class="spacer"></span>
+          <button class="small primary" id="ctCopy" type="button">복사</button>
+        </div>
+        <div class="row" role="group" aria-label="범위">
+          <span class="label">범위</span>
+          <label class="note"><input type="radio" name="ctScope" value="life" checked> 인생 전체</label>
+          <label class="note"><input type="radio" name="ctScope" value="batch"> 이번 뽑기만</label>
+        </div>
+        <div class="row" role="group" aria-label="형식">
+          <span class="label">형식</span>
+          <label class="note"><input type="radio" name="ctFmt" value="summary" checked> 설정 요약</label>
+          <label class="note"><input type="radio" name="ctFmt" value="status"> 상태창 줄</label>
+          <label class="note"><input type="radio" name="ctFmt" value="cards"> 결과 카드 전부</label>
+        </div>
+        <textarea class="out" id="ctOut" readonly aria-label="크랙에 붙일 텍스트"></textarea>
+        <p class="note" id="ctHint"></p>
+      </div>
     </section>
 
     <section class="col" aria-label="인생 진행">
@@ -1140,6 +1160,7 @@ function render() {
   $("talents").innerHTML = S.talents.length ? S.talents.map(itemHTML).join("") : `<span class="none">아직 없다.</span>`;
   $("bonds").innerHTML = S.bonds.length ? S.bonds.map(itemHTML).join("") : `<span class="none">성장 가챠에서 인연을 고르면 생긴다.</span>`;
   $("log").innerHTML = S.log.length ? S.log.map(l => `<span>${esc(l)}</span>`).join("") : `<span>아직 굴림이 없다.</span>`;
+  try { refreshCrack(); } catch (e) { }      // 스크립트 초기화 전 첫 render에서는 건너뛴다
 }
 
 document.addEventListener("click", ev => {
@@ -1172,6 +1193,92 @@ $("copyBtn").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(el.textContent); b.textContent = "복사했다"; }
   catch (e) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "선택했다 — Ctrl+C"; }
   setTimeout(() => b.textContent = "카드 텍스트 복사", 1600);
+});
+
+// ───────────────────────── 크랙에 붙일 텍스트
+const gradeTag = c => c.fam === "비정상" ? `【비정상·${subName(c.fam, c.s)}】` : `【${c.fam}·${subName(c.fam, c.s)} / ${c.step}단계】`;
+function fixLine(c) {
+  if (c.overcome) return "극복 완료 — 흉터가 재능이 됐다";
+  if (!(c.fam === "실패" || c.fam === "재앙") || !c.e.fix) return "";
+  const to = c.kind === "재능" ? ` → 【${c.fam === "실패" ? "준수" : "희귀"}·${subName(c.fam, c.s)}】` : " → 화목 +2★";
+  return `극복 대기: ${c.e.fix}${to}`;
+}
+function talentLines(c, i) {
+  const e = c.e, L = [];
+  if (c.fam === "비정상") L.push(`${i}. ${e.n} ${gradeTag(c)}`, `   효과: ${e.eff}`, `   대가: ${e.cost}`);
+  else {
+    const v = STAT[c.step - 1], gr = GROW[c.step - 1];
+    L.push(`${i}. ${e.n} ${gradeTag(c)} — ${e.st} ${v > 0 ? "+" : ""}${v}${gr !== 1 ? `, ${e.st} 성장 ×${gr.toFixed(2)}` : ""}${c.awakened ? " · ✦각성" : ""}`);
+    L.push(`   "${e.d}"`);
+  }
+  if (e.when) L.push(`   처음 드러난 때: ${e.when}`);
+  const fx = fixLine(c); if (fx) L.push(`   ${fx}`);
+  return L;
+}
+function personLines(c) {
+  const e = c.e, L = [];
+  if (c.kind === "인연") {
+    L.push(`- ${e.name} · ${e.r} ${gradeTag(c)}`);
+    if (c.fam === "비정상") L.push(`  효과: ${e.eff}`, `  대가: ${e.cost}`); else L.push(`  ${e.d}`);
+  } else {
+    L.push(`- ${{ 부: "부(父)", 모: "모(母)" }[c.kind]} ${e.name ? e.name + " · " : ""}${e.j} · ${e.age}세 ${gradeTag(c)}`);
+    if (c.fam === "비정상") L.push(`  효과: ${e.eff}`, `  대가: ${e.cost}`);
+    else L.push(`  성격: ${e.p} / 양육: ${e.c} / 재력 ${stars(e.w)} · 화목 ${stars(e.h)}`, `  ${e.d}`);
+  }
+  const fx = fixLine(c); if (fx) L.push(`  ${fx}`);
+  return L;
+}
+function nextGacha() {
+  if (!S.birthDone) return "출생 5연차 (부·모·재능 3)";
+  if (S.stage >= 1 && S.stage <= 4) return `${STAGES[S.stage]} 가챠 (재능 또는 인연 1장)`;
+  return "성장 가챠 끝 — 복 100으로만 뽑는다";
+}
+function scopeCards(scope) {
+  if (scope === "batch") return BATCH.slice();
+  return [...S.parents, ...S.talents, ...S.bonds];
+}
+function crackText(scope, fmt) {
+  const cards = scopeCards(scope);
+  if (!cards.length) return "";
+  if (fmt === "cards") return cards.map(c => "```\n" + cardText(c) + "\n```").join("\n\n");
+  if (fmt === "status") {
+    const tal = S.talents.map(c => `[${c.e.n} ${c.step ? c.step + "단계" : "비정상·" + subName(c.fam, c.s)}]`).join(" ");
+    const wait = [...S.parents, ...S.talents, ...S.bonds].filter(c => !c.overcome && (c.fam === "실패" || c.fam === "재앙") && c.e.fix)
+      .map(c => `${c.kind === "재능" ? c.e.n : `${{ 부: "부(父)", 모: "모(母)" }[c.kind] || c.e.r} ${c.e.name}`}(${c.e.fix})`).join(", ");
+    return `🥚 눈치 ${S.g}/${CFG.gaugeMax} · 전설까지 ${Math.max(0, CFG.topPity - S.topMiss)} · 복 ${S.bok}\n🎴 재능: ${tal || "없음"} · 🔓 극복 대기: ${wait || "없음"}`;
+  }
+  const par = cards.filter(c => c.kind === "부" || c.kind === "모");
+  const tal = cards.filter(c => c.kind === "재능");
+  const bon = cards.filter(c => c.kind === "인연");
+  const L = ["<gacha_result>",
+    scope === "batch" ? "# 삼신 가챠 — 이번 뽑기 결과. 이 결과를 반영해 이어서 진행한다." : "# 삼신 가챠 결과 — 이 설정으로 이어서 진행한다. 이미 정해진 결과는 다시 굴리지 않는다."];
+  if (par.length) { L.push("", "## 부모"); par.forEach(c => L.push(...personLines(c))); }
+  if (tal.length) { L.push("", "## 재능"); tal.forEach((c, i) => L.push(...talentLines(c, i + 1))); }
+  if (bon.length) { L.push("", "## 인연"); bon.forEach(c => L.push(...personLines(c))); }
+  L.push("", "## 가챠 상태",
+    `눈치 ${S.g}/${CFG.gaugeMax} · 전설까지 ${Math.max(0, CFG.topPity - S.topMiss)} · 복 ${S.bok}`,
+    `다음 가챠: ${nextGacha()}`, "</gacha_result>");
+  return L.join("\n");
+}
+const CT_HINT = {
+  summary: "시작 설정 같은 곳에 붙이면 봇이 이 결과를 이어받는다. 프롬프트의 <gacha_system> 블록은 그대로 둔다.",
+  status: "봇 응답 맨 아래 상태창의 가챠 줄(프롬프트 8.12)을 이걸로 맞춘다.",
+  cards: "봇이 출력하는 결과 카드 형식 그대로다. 예시 출력이나 대화 시작 장면에 쓴다.",
+};
+function refreshCrack() {
+  const scope = document.querySelector('input[name="ctScope"]:checked').value;
+  const fmt = document.querySelector('input[name="ctFmt"]:checked').value;
+  const txt = crackText(scope, fmt);
+  $("ctOut").value = txt || (scope === "batch" ? "이번에 뽑은 카드가 없다. 가챠를 한 번 돌리면 여기 정리된다." : "아직 뽑은 카드가 없다. '출생 5연차'부터 돌린다.");
+  $("ctHint").textContent = CT_HINT[fmt];
+  $("ctCopy").disabled = !txt;
+}
+document.querySelectorAll('input[name="ctScope"], input[name="ctFmt"]').forEach(el => el.addEventListener("change", refreshCrack));
+$("ctCopy").addEventListener("click", async () => {
+  const o = $("ctOut"), b = $("ctCopy");
+  try { await navigator.clipboard.writeText(o.value); b.textContent = "복사했다"; }
+  catch (e) { o.focus(); o.select(); b.textContent = "선택했다 — Ctrl+C"; }
+  setTimeout(() => { b.textContent = "복사"; }, 1600);
 });
 
 // ───────────────────────── 개발자 화면 (비밀번호는 소금 친 SHA-256으로만 비교한다)
