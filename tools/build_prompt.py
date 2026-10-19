@@ -1,4 +1,4 @@
-"""크랙 프롬프트(prompt/정상_프롬프트.txt) 생성기.
+"""크랙 프롬프트(prompt/jungsang_prompt.txt) 생성기.
 
   python tools/build_prompt.py
 
@@ -142,7 +142,7 @@ G10(확정) 희귀~7600/전설~9700/신화~10000
 
 def main():
     text = TEMPLATE.replace("{TABLE}", rows()).replace("{GUARD}", guard_rows())
-    out = ROOT / "prompt" / "정상_프롬프트.txt"
+    out = ROOT / "prompt" / "jungsang_prompt.txt"
     out.write_text(text, encoding="utf-8")
     n = len(text)
     print(f"{out.relative_to(ROOT)}: {n}자 (공백 포함) / 공백 제외 {len(''.join(text.split()))}자")

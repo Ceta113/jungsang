@@ -8,7 +8,7 @@
 
 | 경로 | 내용 |
 |---|---|
-| `prompt/정상_프롬프트.txt` | **크랙에 넣는 완성 프롬프트** (7000자 이내, 인생 시뮬 + 압축 가챠). `python tools/build_prompt.py`로 다시 만든다 |
+| `prompt/jungsang_prompt.txt` | **크랙에 넣는 완성 프롬프트** (7000자 이내, 인생 시뮬 + 압축 가챠). `python tools/build_prompt.py`로 다시 만든다 |
 | `prompt/gacha_block.txt` | 가챠 규칙 풀버전 (설명용, 길이 제한 없음) |
 | `docs/GACHA.md` | 가챠 설계 근거: 확률, 천장, 실패 보상, 연출, 시뮬레이션 결과 |
 | `art/out/steps/` | 단계 이미지 24장 (01_재앙_하 ~ 21_신화_상, 22~24 비정상) |
