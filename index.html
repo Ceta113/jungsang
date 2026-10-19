@@ -45,6 +45,23 @@ h2 { font-family: var(--display); font-size: 21px; margin: 0; font-weight: 700; 
 .stage canvas.inverted { filter: invert(1) hue-rotate(180deg); }
 .caption { position: absolute; left: 14px; top: 12px; z-index: 2; font-size: 13px; color: #e8e4dccc; background: #0009; padding: 3px 10px; border-radius: 999px; }
 .caption:empty { display: none; }
+.skipbtn { position: absolute; right: 12px; bottom: 12px; z-index: 3; background: #000b; color: #f1ece2; border: 1px solid #ffffff38; border-radius: 999px; padding: 7px 14px; font-weight: 700; font-size: 13.5px; }
+.skipbtn:hover { border-color: var(--accent); }
+
+/* 이번 뽑기 결과 — 한 장씩 촤르륵 */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(98px, 1fr)); gap: 10px; }
+.tile { display: grid; padding: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-align: left; color: var(--ink);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tc) 35%, transparent);
+  opacity: 0; transform: translateY(12px) scale(.94); animation: tileIn .42s cubic-bezier(.2, .9, .3, 1.25) forwards; animation-delay: var(--d); }
+.tile .thumb { aspect-ratio: 1; overflow: hidden; }
+.tile .thumb img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.5); transform-origin: 50% 40%; display: block; }
+.tile .tl { padding: 5px 8px 8px; display: grid; gap: 1px; min-width: 0; }
+.tile .tl b { font-size: 13px; color: var(--tc); font-variant-numeric: tabular-nums; }
+.tile .tl span { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile.best { box-shadow: 0 0 0 2px var(--tc), 0 0 24px -4px var(--tc); }
+.tile.best .tl b::after { content: " ✦"; }
+@keyframes tileIn { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tile { animation: none; opacity: 1; transform: none; } }
 
 /* 결과 카드 */
 .card { font-family: var(--mono); font-size: 13.5px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; background: #0b0d12; border: 1px solid var(--line); border-left: 3px solid var(--tc, var(--accent)); border-radius: 10px; padding: 14px 16px; margin: 0; min-height: 7.5em; }
@@ -123,6 +140,11 @@ textarea.out { width: 100%; min-height: 220px; color: var(--ink); resize: vertic
       <div class="stage" id="stage">
         <canvas id="cv" width="1024" height="1024" aria-label="삼신의 알이 내려와 깨지는 연출"></canvas>
         <div class="caption" id="caption"></div>
+        <button class="skipbtn" id="skipBtn" type="button" hidden>결과 바로 보기 ▸▸</button>
+      </div>
+      <div class="panel" id="batchPanel" hidden>
+        <div class="row"><h2 id="batchTitle">이번 뽑기 결과</h2><span class="spacer"></span><span class="note" id="batchSum"></span></div>
+        <div class="tiles" id="tiles"></div>
       </div>
       <div class="panel">
         <div class="row">
@@ -740,7 +762,8 @@ function spawn(A, t, dt, L, pose) {
     const nsh = { 전설: [18, 26, 34], 신화: [24, 32, 40], 희귀: [8, 14, 20], 재앙: [10, 6, 3] }[fam]?.[s] ?? (fam === "비정상" && s > 0 ? 14 : 0);
     for (let i = 0; i < nsh; i++) {
       const sz = 8 + r() * 14, sh = { k: "shard", size: sz, rot: r() * 6.28, vr: (r() - 0.5) * 3, life: 0, max: Infinity, pts: [0, 1, 2].map(j => [Math.cos(j * 2.1 + gauss(r) * 0.3), Math.sin(j * 2.1 + gauss(r) * 0.3)]), dark: fam === "재앙" || fam === "비정상", col: RGB[fam] };
-      if (fam === "전설" || fam === "신화") { const ang = -Math.PI * r() + 0.08, sp = 120 + r() * 260; Object.assign(sh, { x: cw[0], y: cw[1], vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp * 0.9, drag: 0.993 }); }
+      // 원본 그림처럼 중심에서 190~400px까지 흩어지게: 이동 거리 ≈ 초속 × 0.67초
+      if (fam === "전설" || fam === "신화") { const ang = -Math.PI * r() + 0.08, sp = 285 + r() * 315; Object.assign(sh, { x: cw[0], y: cw[1], vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp * 0.9, drag: 0.9985 }); }
       else if (fam === "재앙") Object.assign(sh, { x: E.cx + gauss(r) * 150, y: HOR - 4 - r() * 30, vx: 0, vy: 0, vr: 0 });
       else { const ang = r() * 6.28, rr = 210 + r() * 80; Object.assign(sh, { x: E.cx + Math.cos(ang) * rr, y: E.cy - 40 + Math.sin(ang) * rr * 0.75, vx: 0, vy: 0, float: r() * 6.28, vr: fam === "비정상" ? 0 : sh.vr * 0.3 }); }
       P.push(sh);
@@ -1002,18 +1025,57 @@ function showCard(c) {
 }
 
 // ───────────────────────── 인생 진행
+// '결과 바로 보기'를 누르면 기다리던 연출이 전부 즉시 끝난다
+let SKIP = false, wakers = [];
+function pressSkip() { SKIP = true; wakers.splice(0).forEach(f => f()); }
+function waitOr(ms) {
+  if (SKIP) return Promise.resolve();
+  return new Promise(res => {
+    const done = () => { clearTimeout(t); res(); };
+    const t = setTimeout(done, skipOn() ? 0 : ms);
+    wakers.push(done);
+  });
+}
+const rankOf = c => c.fam === "비정상" ? 21.5 + c.s * 0.1 : c.step;
+const bestOf = cards => cards.reduce((a, b) => rankOf(b) > rankOf(a) ? b : a);
+let BATCH = [];
 async function run(list) {
   if (S.busy) return;
-  S.busy = true; render();
-  for (const [kind, slot, birth] of list) {
+  S.busy = true; SKIP = false;
+  $("skipBtn").hidden = false; $("batchPanel").hidden = true;
+  render();
+  const cards = [];
+  for (let i = 0; i < list.length; i++) {
+    const [kind, slot, birth] = list[i];
     const c = drawOne(kind, slot, birth);
+    cards.push(c);
+    if (SKIP) continue;                       // 남은 장은 연출 없이 굴린다
     render();
-    await playCard(c);
-    showCard(c);
-    save(); render();
-    await sleep(list.length > 1 ? 1100 : 0);
+    playCard(c);
+    await waitOr(A.T.settle);
+    if (SKIP) playCard(c, true);              // 보던 장은 다 깨진 모습으로 넘긴다
+    showCard(c); save(); render();
+    if (i < list.length - 1) await waitOr(1100);
   }
+  $("skipBtn").hidden = true;
+  if ((SKIP || skipOn()) && cards.length > 1) { const b = bestOf(cards); playCard(b, true); showCard(b); }
+  showBatch(cards);
   S.busy = false; save(); render();
+}
+function showBatch(cards) {
+  BATCH = cards;
+  if (cards.length < 2) { $("batchPanel").hidden = true; return; }
+  const best = bestOf(cards), cnt = {};
+  cards.forEach(c => { cnt[c.fam] = (cnt[c.fam] || 0) + 1; });
+  $("batchTitle").textContent = `이번 뽑기 결과 · ${cards.length}장`;
+  $("batchSum").textContent = [...LADDER].reverse().concat("비정상").filter(f => cnt[f]).map(f => `${f} ${cnt[f]}`).join(" · ");
+  const who = c => ({ 부: "부(父)", 모: "모(母)" }[c.kind] || c.kind);
+  const title = c => c.kind === "재능" ? c.e.n : c.kind === "인연" ? `${c.e.name} · ${c.e.r}` : `${c.e.name || ""} ${c.e.j}`;
+  $("tiles").innerHTML = cards.map((c, i) => `<button class="tile${c === best ? " best" : ""}" type="button" data-tile="${i}"
+      style="--tc:${cssColor(c.fam)};--d:${i * 110}ms" aria-label="${esc(`${i + 1}번째 ${who(c)} ${c.fam} ${subName(c.fam, c.s)} ${title(c)}`)}">
+      <div class="thumb"><img src="${imgOf(c.fam, c.s)}" alt=""></div>
+      <div class="tl"><b>${c.fam}·${subName(c.fam, c.s)}${c.step ? ` ${c.step}` : ""}</b><span>${esc(who(c))}</span><span>${esc(title(c))}</span></div></button>`).join("");
+  $("batchPanel").hidden = false;
 }
 function startBirth() {
   const birth = { i: 0, good: false, calamity: false };
@@ -1087,6 +1149,11 @@ document.addEventListener("click", ev => {
   else if (t.dataset.grow) growth(t.dataset.grow);
   else if (t.dataset.bok) bokPull(t.dataset.bok);
   else if (t.dataset.fix) overcome(t.dataset.fix);
+  else if (t.id === "skipBtn") pressSkip();
+  else if (t.dataset.tile !== undefined) {
+    const c = BATCH[+t.dataset.tile];
+    if (c && !S.busy) { showCard(c); playCard(c, true); }
+  }
   else if (t.dataset.show) {
     const c = [...S.parents, ...S.talents, ...S.bonds].find(x => x.id === t.dataset.show);
     if (c) { showCard(c); playCard(c, true); }
