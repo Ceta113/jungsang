@@ -36,7 +36,10 @@ REUSE = {
 for _k, (_p, _) in REUSE.items():
     assert _p.exists(), _p
 
-# 최종 파일 이름(확장자 없이). 크랙 이미지 키워드로 그대로 써도 되게 짧게.
+# 크랙 이미지 표는 파일 이름을 첫 '_'에서 잘라 앞은 열(감정), 뒤는 행(상황)으로 쓴다. 빈칸이 있으면 안 되므로
+# 인물당 한 장인 여기서는 열을 PREFIX 하나로 통일한다 → '기본_엄마_다정.png' = 열 '기본' × 행 '엄마_다정'.
+PREFIX = "기본"
+# 최종 파일 이름의 행 부분(확장자 없이).
 FILES = {
     "p_baby": "주인공_0세_아기", "p_toddler_m": "주인공_3세_남", "p_toddler_f": "주인공_3세_여",
     "p_kinder_m": "주인공_6세_남", "p_kinder_f": "주인공_6세_여", "p_elem_m": "주인공_초등_남", "p_elem_f": "주인공_초등_여",
@@ -208,6 +211,8 @@ def cmd_sheet(keys=None):
 def cmd_final():
     st = load()
     FINAL.mkdir(exist_ok=True)
+    for old in FINAL.glob("*.png"):  # 전부 raw/·원본에서 복사한 것이라 지우고 다시 만든다
+        old.unlink()
     rows, missing = [], []
     for k, (g, e) in ALL.items():
         if k in REUSE:
@@ -216,10 +221,11 @@ def cmd_final():
             src, note = RAW / st[k]["pick"], f"seed {st[k]['seeds'][st[k]['files'].index(st[k]['pick'])]}"
         else:
             missing.append(k); continue
-        dst = FINAL / f"{FILES[k]}.png"
+        dst = FINAL / f"{PREFIX}_{FILES[k]}.png"
         shutil.copy2(src, dst)
         rows.append(f"| {g} | {e[1]} | `{dst.name}` | {note} |")
-    idx = ["# 정상 · 이미지 목록", "", f"{len(rows)}장. 파일 이름을 크랙 이미지 키워드로 그대로 써도 된다.", "",
+    idx = ["# 정상 · 이미지 목록", "",
+           f"{len(rows)}장. 크랙 이미지 표에서 열은 전부 `{PREFIX}` 하나, 행은 파일 이름의 `{PREFIX}_` 뒷부분이라 빈칸이 없다.", "",
            "| 분류 | 항목 | 파일 | 비고 |", "|---|---|---|---|"] + rows
     (FINAL / "INDEX.md").write_text("\n".join(idx) + "\n", encoding="utf-8")
     print(f"정리 {len(rows)}장 → nai/images/", "· 없음: " + ", ".join(missing) if missing else "")
@@ -240,7 +246,7 @@ def preview():
     cells = [(k, (i % pc) * pw, (i // pc) * ph, pw, ph) for i, k in enumerate(port)]
     cells += [(k, (i % lc) * lw, prow * ph + (i // lc) * lh, lw, lh) for i, k in enumerate(land)]
     for k, x, y, w, h in cells:
-        im = Image.open(FINAL / f"{FILES[k]}.png").convert("RGB")
+        im = Image.open(FINAL / f"{PREFIX}_{FILES[k]}.png").convert("RGB")
         im = im.resize((w, int(im.height * w / im.width)), Image.LANCZOS).crop((0, 0, w, h))
         sheet.paste(im, (x, y))
         d.rectangle([x, y + h - 20, x + w, y + h], fill=(0, 0, 0))
