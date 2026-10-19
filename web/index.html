@@ -598,14 +598,67 @@ function makeCracks(r, level) {
 }
 const crackCount = (A, lvl) => A.cracks.bounds[Math.min(A.cracks.bounds.length, { 1: 1, 2: 3, 3: 5, 4: 7 }[lvl]) - 1] || 0;
 
+// ── 성능: 비싼 효과(블러·그라디언트)는 한 번만 만들어 두고 그리기만 한다. 색은 12단계로 묶어 캐시가 무한히 늘지 않게 한다
+const qc = c => c.map(v => Math.min(255, Math.round(v / 12) * 12));
+const qkey = c => qc(c).join(",");
 const dotCache = new Map();
 function dot(c) {
-  const k = c.map(v => v | 0).join(",");
+  const k = qkey(c);
   if (dotCache.has(k)) return dotCache.get(k);
-  const s = document.createElement("canvas"); s.width = s.height = 64;
+  const cc = qc(c), s = document.createElement("canvas"); s.width = s.height = 64;
   const x = s.getContext("2d"), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-  gr.addColorStop(0, rgba(c, 1)); gr.addColorStop(0.22, rgba(c, .6)); gr.addColorStop(1, rgba(c, 0));
+  gr.addColorStop(0, rgba(cc, 1)); gr.addColorStop(0.22, rgba(cc, .6)); gr.addColorStop(1, rgba(cc, 0));
   x.fillStyle = gr; x.fillRect(0, 0, 64, 64); dotCache.set(k, s); return s;
+}
+// 알 모양으로 번지는 빛: 흰 빛을 딱 한 번 블러로 만들고, 색은 source-in으로 입혀 캐시
+const GLOW = (() => {
+  const c = document.createElement("canvas"); c.width = 560; c.height = 680;
+  const x = c.getContext("2d");
+  x.translate(280, 340); x.shadowColor = "#fff"; x.shadowBlur = 46; x.shadowOffsetX = 4000;
+  x.translate(-4000, 0); x.fillStyle = "#fff"; x.fill(EGGP);          // 모양은 화면 밖, 그림자(번짐)만 안쪽에 남는다
+  return c;
+})();
+const glowCache = new Map();
+function glowTint(c) {
+  const k = qkey(c);
+  if (glowCache.has(k)) return glowCache.get(k);
+  const s = document.createElement("canvas"); s.width = GLOW.width; s.height = GLOW.height;
+  const x = s.getContext("2d"); x.drawImage(GLOW, 0, 0);
+  x.globalCompositeOperation = "source-in"; x.fillStyle = rgba(qc(c), 1); x.fillRect(0, 0, s.width, s.height);
+  glowCache.set(k, s); return s;
+}
+// 빛줄기: 삼각형 18개의 그라디언트를 한 장에 구워 두고 돌리기만 한다
+const rayCache = new Map();
+function raySprite(c, n) {
+  const k = qkey(c) + "|" + n;
+  if (rayCache.has(k)) return rayCache.get(k);
+  const S_ = 560, s = document.createElement("canvas"); s.width = s.height = S_;
+  const x = s.getContext("2d"), f = S_ / 1100, cc = qc(c);
+  x.translate(S_ / 2, S_ / 2); x.scale(f, f); x.globalCompositeOperation = "lighter";
+  for (let i = 0; i < n; i++) {
+    const a = i / n * 6.2832 + Math.sin(i * 12.9) * 0.2, len = 380 + 160 * Math.abs(Math.sin(i * 7.7)), w = 10 + 14 * Math.abs(Math.sin(i * 3.1));
+    const gr = x.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len);
+    gr.addColorStop(0, rgba(cc, 0.38)); gr.addColorStop(1, rgba(cc, 0));
+    x.fillStyle = gr; x.beginPath(); x.moveTo(0, 0);
+    x.lineTo(Math.cos(a - w / len) * len, Math.sin(a - w / len) * len); x.lineTo(Math.cos(a + w / len) * len, Math.sin(a + w / len) * len); x.closePath(); x.fill();
+  }
+  rayCache.set(k, s); return s;
+}
+// 배경 + 붓결 + 비네트를 배경 종류·해상도마다 한 번만 합쳐 둔다 (예전엔 매 프레임 붓결 4장 합성 + 그라디언트)
+const bakeCache = new Map();
+function bakedBg(kind) {
+  const W = cv.width, key = kind + "|" + W;
+  if (bakeCache.has(key)) return bakeCache.get(key);
+  const img = IMG["bg_" + kind]; if (!img) return null;
+  const c = document.createElement("canvas"); c.width = c.height = W;
+  const x = c.getContext("2d"), s = W / 1024;
+  x.drawImage(img, 0, 0, W, W);
+  if (IMG.tex) { x.globalCompositeOperation = "soft-light"; x.globalAlpha = 0.22; for (let yy = 0; yy < 2; yy++) for (let xx = 0; xx < 2; xx++) x.drawImage(IMG.tex, xx * W / 2, yy * W / 2, W / 2, W / 2); }
+  x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
+  const vg = x.createRadialGradient(512 * s, 480 * s, 300 * s, 512 * s, 512 * s, 760 * s);
+  vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.5)");
+  x.fillStyle = vg; x.fillRect(0, 0, W, W);
+  bakeCache.set(key, c); return c;
 }
 
 let A = null;           // 지금 무대에 올라간 연출
@@ -694,48 +747,54 @@ function sprites(A, t, L, refl) {
   return [IMG.egg_normal, null, 0];
 }
 
-function drawCracks(A, L, refl) {
+// 균열은 한 번 구워 두고 붙이기만 한다 (예전엔 알 본체·뚜껑·반사마다 알 모양으로 잘라 선 20여 개를 3~4겹씩 그었다)
+// 홈(어두운 금)은 보통 합성, 빛은 더하기 합성이라 두 장으로 나눠 굽는다. 밝기 변화(숨 쉬듯)는 붙일 때 투명도로만 준다
+function crackLayer(A, L) {
   const n = crackCount(A, L.lvl);
-  if (!n || L.prog <= 0) return;
-  const hot = A.fam !== "재앙" && L.I > 0.3;
-  g.save(); g.clip(EGGP); g.lineCap = "round"; g.lineJoin = "round";
-  for (let i = 0; i < n; i++) {
-    const k = A.cracks.list[i]; g.setLineDash([k.len * L.prog, 1e5]);
-    g.lineWidth = k.w * 1.7; g.strokeStyle = "rgba(24,16,12,.55)"; g.stroke(k.p);
+  if (!n || L.prog <= 0) return null;
+  const prog = L.prog >= 0.995 ? 1 : Math.round(L.prog * 25) / 25;
+  const hot = A.fam !== "재앙" && L.I > 0.3, chroma = A.fam === "비정상" && L.cx > 0;
+  const key = [n, prog, qkey(L.col), hot, chroma, cv.width].join("|");
+  if (A._ckey === key) return A._clay;
+  const s = Math.min(1, cv.width / 1024) * 1.25;           // 알 크기 대비 약간 여유 있는 해상도
+  const mk = () => { const c = A._clay?.[mk.n++] || document.createElement("canvas"); c.width = Math.ceil(360 * s); c.height = Math.ceil(460 * s); const x = c.getContext("2d"); x.setTransform(s, 0, 0, s, 180 * s, 230 * s); x.clip(EGGP); x.lineCap = "round"; x.lineJoin = "round"; return [c, x]; };
+  mk.n = 0;
+  const [dc, dx] = mk(), [lc, lx] = mk();
+  const list = A.cracks.list;
+  const each = (x, fn) => { for (let i = 0; i < n; i++) { const k = list[i]; x.setLineDash([k.len * prog, 1e5]); fn(k); } };
+  each(dx, k => { dx.lineWidth = k.w * 1.7; dx.strokeStyle = "rgba(24,16,12,.55)"; dx.stroke(k.p); });
+  lx.globalCompositeOperation = "lighter";
+  lx.strokeStyle = rgba(L.col, 0.2); each(lx, k => { lx.lineWidth = k.w * 5; lx.stroke(k.p); });       // 번짐
+  lx.strokeStyle = rgba(L.col, 1); each(lx, k => { lx.lineWidth = k.w; lx.stroke(k.p); });
+  if (hot) { lx.strokeStyle = "rgba(255,255,255,.95)"; each(lx, k => { lx.lineWidth = k.w * 0.45; lx.stroke(k.p); }); }
+  if (chroma) for (const [ox, cc] of [[3.5, "rgba(255,60,60,.7)"], [-3.5, "rgba(60,120,255,.7)"]]) {
+    lx.save(); lx.translate(ox, 0); lx.strokeStyle = cc;
+    each(lx, k => { lx.lineWidth = k.w * 0.8; lx.stroke(k.p); }); lx.restore();
   }
-  g.globalCompositeOperation = "lighter";
-  if (!refl) { g.shadowColor = rgba(L.col, 1); g.shadowBlur = 14; }
-  for (let i = 0; i < n; i++) {
-    const k = A.cracks.list[i]; g.setLineDash([k.len * L.prog, 1e5]);
-    g.lineWidth = k.w; g.strokeStyle = rgba(L.col, Math.min(1, 0.3 + L.I)); g.stroke(k.p);
-  }
-  g.shadowBlur = 0;
-  if (hot) for (let i = 0; i < n; i++) {
-    const k = A.cracks.list[i]; g.setLineDash([k.len * L.prog, 1e5]);
-    g.lineWidth = k.w * 0.45; g.strokeStyle = `rgba(255,255,255,${Math.min(0.95, L.I)})`; g.stroke(k.p);
-  }
-  if (A.fam === "비정상" && L.cx > 0 && !refl) {
-    g.globalCompositeOperation = "screen";
-    for (const [dx, cc] of [[3.5, "rgba(255,60,60,.7)"], [-3.5, "rgba(60,120,255,.7)"]]) {
-      g.save(); g.translate(dx, 0);
-      for (let i = 0; i < n; i++) { const k = A.cracks.list[i]; g.setLineDash([k.len, 1e5]); g.lineWidth = k.w * 0.8; g.strokeStyle = cc; g.stroke(k.p); }
-      g.restore();
-    }
-    g.globalCompositeOperation = "lighter";
-  }
-  g.setLineDash([]);
-  const gr = g.createRadialGradient(0, -20, 10, 0, 0, 230);
-  gr.addColorStop(0, rgba(L.col, 0.3 * L.I * L.prog)); gr.addColorStop(1, rgba(L.col, 0));
-  g.fillStyle = gr; g.fill(EGGP);
-  g.restore();
+  lx.setLineDash([]);
+  const gr = lx.createRadialGradient(0, -20, 10, 0, 0, 230);
+  gr.addColorStop(0, rgba(L.col, 0.3 * prog)); gr.addColorStop(1, rgba(L.col, 0));
+  lx.fillStyle = gr; lx.fill(EGGP);
+  A._ckey = key; A._clay = [dc, lc];
+  return A._clay;
+}
+function drawCracks(A, L, refl) {
+  const lay = crackLayer(A, L);
+  if (!lay) return;
+  g.drawImage(lay[0], -180, -230, 360, 460);
+  const ga = g.globalAlpha, gc = g.globalCompositeOperation;
+  g.globalCompositeOperation = "lighter"; g.globalAlpha = ga * Math.min(1, 0.3 + L.I) * (refl ? 0.8 : 1);
+  g.drawImage(lay[1], -180, -230, 360, 460);
+  g.globalAlpha = ga; g.globalCompositeOperation = gc;
 }
 
 function drawEgg(A, t, L, pose, refl) {
   const [sp1, sp2, mixv] = sprites(A, t, L, refl);
   g.save(); g.translate(pose.x, pose.y); g.rotate(pose.rot);
   if (L.I > 0.03) {
-    g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha = Math.min(1, L.I * 0.85);
-    g.shadowColor = rgba(L.col, 1); g.shadowBlur = refl ? 20 : 26 + 46 * L.I; g.fillStyle = rgba(L.col, 1); g.fill(EGGP); g.restore();
+    g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha = Math.min(1, L.I * 0.95) * (refl ? 0.5 : 1);
+    const k = 1 + 0.16 * Math.min(1, L.I);
+    g.drawImage(glowTint(L.col), -280 * k, -340 * k, 560 * k, 680 * k); g.restore();
   }
   const piece = clip => {
     g.save(); if (clip) g.clip(clip);
@@ -824,7 +883,7 @@ function update(dt) {
     if (p.k === "ash" && p.y > HOR) p.life = p.max;
   }
   P = P.filter(p => p.life < p.max);
-  if (P.length > 1400) P.splice(0, P.length - 1400);
+  if (P.length > 700) P.splice(0, P.length - 700);
 }
 
 function drawParticles(L) {
@@ -861,11 +920,16 @@ function hsl2rgb(h, s, l) {
   return [f(0) * 255, f(8) * 255, f(4) * 255];
 }
 
+let stageVisible = true;
+new IntersectionObserver(es => { stageVisible = es[0].isIntersecting; }).observe(cv);
 function frame(now) {
   requestAnimationFrame(frame);
-  if (document.hidden) return;
+  if (document.hidden || !stageVisible) { frame.last = now; return; }      // 화면 밖이면 아예 쉰다
+  const act = A || IDLE;
+  const calm = !A || now - A.t0 > A.T.settle + 2500;                       // 연출이 끝나 잔잔할 땐 30fps
+  if (calm && now - (frame.last || 0) < 30) return;
   const dt = Math.min(50, now - (frame.last || now)); frame.last = now;
-  tick((A || IDLE), now - (A || IDLE).t0, dt);
+  tick(act, now - act.t0, dt);
   paint(now);
 }
 const idleLook = t => ({ col: RGB.정상, I: 0.14 + 0.04 * Math.sin(t / 700), lvl: 1, flash: 0, inv: false, mode: "", cx: 0, prog: 0 });
@@ -888,9 +952,12 @@ function paint(now) {
   // 세계급: 세상이 기운다
   const tilt = A && A.fam === "비정상" && A.s === 2 ? ease((t - A.T.climax) / 700) : 0;
   if (tilt) { g.translate(512, 512); g.rotate(-13 * DEG * tilt); g.scale(1 + 0.24 * tilt, 1 + 0.24 * tilt); g.translate(-512, -512); }
-  g.drawImage(IMG.bg_dark, 0, 0, 1024, 1024);
+  g.drawImage(bakedBg("dark") || IMG.bg_dark, 0, 0, 1024, 1024);
   const bgk = A ? BGOF(A.fam, A.s) : null;
-  if (bgk && IMG["bg_" + bgk]) { g.globalAlpha = ease((t - A.T.climax + 150) / 700); g.drawImage(IMG["bg_" + bgk], 0, 0, 1024, 1024); g.globalAlpha = 1; }
+  if (bgk && IMG["bg_" + bgk]) {
+    const m = ease((t - A.T.climax + 150) / 700);
+    if (m > 0) { g.globalAlpha = m; g.drawImage(bakedBg(bgk), 0, 0, 1024, 1024); g.globalAlpha = 1; }
+  }
   const pale = bgk === "pale" ? ease((t - A.T.climax + 150) / 700) : 0;
 
   // 무대 전체에 번지는 빛
@@ -904,16 +971,17 @@ function paint(now) {
   if (A && A.fam === "신화" && L.cx > 0) ring(L, pose, t);
   g.globalCompositeOperation = "source-over";
 
-  // 물에 비친 알 (비정상은 다른 알이 비친다): 따로 다 그린 뒤 한 번에 흐리게 얹는다
-  if (RC.width !== W) { RC.width = W; RC.height = W; }
+  // 물에 비친 알 (비정상은 다른 알이 비친다): 절반 해상도로 따로 그려 늘려 붙인다 — 늘어나며 자연히 흐려진다
+  const RW = Math.ceil(W / 2), rs = sc / 2;
+  if (RC.width !== RW) { RC.width = RW; RC.height = RW; }
   const rg = RC.getContext("2d");
-  rg.setTransform(1, 0, 0, 1, 0, 0); rg.clearRect(0, 0, W, W);
-  rg.setTransform(sc, 0, 0, -sc, 0, 2 * HOR * sc);
+  rg.setTransform(1, 0, 0, 1, 0, 0); rg.clearRect(0, 0, RW, RW);
+  rg.setTransform(rs, 0, 0, -rs, 0, 2 * HOR * rs);
   g = rg; drawEgg(act, t, L, pose, true); g = G0;
   g.save(); g.beginPath(); g.rect(0, HOR, 1024, 400); g.clip();
-  g.globalAlpha = pale ? 0.6 : 0.34; g.filter = "blur(2px)";
+  g.globalAlpha = pale ? 0.6 : 0.34; g.imageSmoothingQuality = "low";
   g.drawImage(RC, 0, 0, 1024, 1024);
-  g.restore(); g.filter = "none"; g.globalAlpha = 1;
+  g.restore(); g.globalAlpha = 1;
 
   drawEgg(act, t, L, pose, false);
   drawParticles(L);
@@ -932,13 +1000,9 @@ function paint(now) {
     g.globalCompositeOperation = "source-over";
   }
 
-  // 붓결 + 비네트 (기울이기 전 좌표에서)
+  // 붓결·비네트는 배경에 구워 두었다
   g.setTransform(sc, 0, 0, sc, 0, 0);
-  if (IMG.tex) { g.globalCompositeOperation = "soft-light"; g.globalAlpha = 0.22; for (let y = 0; y < 1024; y += 512) for (let x = 0; x < 1024; x += 512) g.drawImage(IMG.tex, x, y, 512, 512); }
   g.globalCompositeOperation = "source-over"; g.globalAlpha = 1;
-  const vg = g.createRadialGradient(512, 480, 300, 512, 512, 760); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.5)");
-  g.fillStyle = vg; g.fillRect(0, 0, 1024, 1024);
-
   if (A) label(A, t);
   cv.classList.toggle("inverted", !!L.inv);
   const cap = A ? (t >= A.T.settle ? "" : `${A.kindLabel} · ${L.mode.replace("②", "② 균열").replace("①", "① 강림")}`) : "";
@@ -952,24 +1016,19 @@ function beam(col) {
 function rays(A, t, L, pose) {
   const [x, y] = coreWorld(pose);
   g.save(); g.translate(x, y); g.rotate(t * 0.00004);
-  g.globalCompositeOperation = "lighter";
-  const n = A.fam === "신화" ? 18 : 14;
-  for (let i = 0; i < n; i++) {
-    const a = i / n * 6.2832 + Math.sin(i * 12.9) * 0.2, len = 380 + 160 * Math.abs(Math.sin(i * 7.7)), w = 10 + 14 * Math.abs(Math.sin(i * 3.1));
-    const gr = g.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len);
-    gr.addColorStop(0, rgba(L.col, 0.38 * pose.open)); gr.addColorStop(1, rgba(L.col, 0));
-    g.fillStyle = gr; g.beginPath(); g.moveTo(0, 0);
-    g.lineTo(Math.cos(a - w / len) * len, Math.sin(a - w / len) * len); g.lineTo(Math.cos(a + w / len) * len, Math.sin(a + w / len) * len); g.closePath(); g.fill();
-  }
+  g.globalCompositeOperation = "lighter"; g.globalAlpha = pose.open;
+  g.drawImage(raySprite(L.col, A.fam === "신화" ? 18 : 14), -550, -550, 1100, 1100);
   g.restore();
 }
 function ring(L, pose, t) {
   const [x, y] = coreWorld(pose), R = 285 * (0.6 + 0.4 * ease(L.cx));
-  g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha = 0.85 * L.cx;
+  g.save(); g.globalCompositeOperation = "lighter";
   let st = rgba(L.col, 1);
   if (g.createConicGradient) { const cg = g.createConicGradient(t * 0.0003, x, y); ["#ffd1e8", "#d6f0ff", "#e9ffd6", "#fff3c8", "#f0d6ff", "#ffd1e8"].forEach((c, i) => cg.addColorStop(i / 5, c)); st = cg; }
-  g.strokeStyle = st; g.lineWidth = 3; g.shadowColor = "rgba(255,255,255,.8)"; g.shadowBlur = 12;
-  g.beginPath(); g.ellipse(x, y, R, R * 0.95, 0, 0, 6.2832); g.stroke(); g.restore();
+  g.strokeStyle = st; g.beginPath(); g.ellipse(x, y, R, R * 0.95, 0, 0, 6.2832);
+  g.globalAlpha = 0.22 * L.cx; g.lineWidth = 11; g.stroke();          // 번짐 (shadowBlur 대신)
+  g.globalAlpha = 0.85 * L.cx; g.lineWidth = 3; g.stroke();
+  g.restore();
 }
 function arcs(A, t, L, pose) {
   if (t - A.arcT > 110) {
@@ -982,9 +1041,10 @@ function arcs(A, t, L, pose) {
       A.arcs.push(pts);
     }
   }
-  g.save(); g.lineJoin = "round"; g.shadowColor = rgba(L.col, 1); g.shadowBlur = 10;
+  g.save(); g.lineJoin = "round";
   for (const pts of A.arcs) {
     g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
+    g.strokeStyle = rgba(L.col, 0.25); g.lineWidth = 7; g.stroke();       // 번짐 (shadowBlur 대신)
     g.strokeStyle = rgba(L.col, 0.9); g.lineWidth = 1.8; g.stroke();
     g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 0.7; g.stroke();
   }
@@ -1006,8 +1066,9 @@ function label(A, t) {
 
 const IDLE = { t0: performance.now(), fam: "정상", s: 1, seq: ["정상"], T: { crack: 1e9, change: 1e9, climax: 1e9, settle: 1e9 }, D: 0, cracks: { list: [], bounds: [0] } };
 function fitCanvas() {
-  const px = Math.max(320, Math.round(Math.min(1024, cv.clientWidth * (window.devicePixelRatio || 1))));
-  if (cv.width !== px) { cv.width = px; cv.height = px; }
+  // 내부 해상도는 최대 900px. 붓터치 그림이라 이 이상은 눈에 거의 안 띄고, 픽셀 수만큼 느려진다
+  const px = Math.max(320, Math.round(Math.min(900, cv.clientWidth * Math.min(2, window.devicePixelRatio || 1))));
+  if (cv.width !== px) { cv.width = px; cv.height = px; bakeCache.clear(); }
 }
 new ResizeObserver(fitCanvas).observe(cv);
 fitCanvas();
