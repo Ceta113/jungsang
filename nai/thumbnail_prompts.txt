@@ -1,4 +1,4 @@
-정상 · 크랙 썸네일용 NAI 프롬프트 3종
+정상 · 크랙 썸네일용 NAI 프롬프트 4종
 설정: nai-diffusion-5-full · 28 steps · scale 7 · k_euler_ancestral · karras
 크기: 세로 832x1216. 칸마다 그대로 복사.
 글자는 NAI가 못 쓰니 제목 '정상'은 뽑은 뒤 따로 얹는다.
@@ -52,4 +52,21 @@ multiple people, 1.5::large breasts, huge breasts::, bad proportions, deformed, 
 
 ■ Undesired Content
 nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, border, frame, blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, dated, artistic error, scan artifacts, jpeg artifacts, upscaled, aliasing, film grain, heavy film grain, dithering, chromatic aberration, digital dissolve, halftone, screentones, artist:xinzoruo, artist:milkpanda, artist:kurukurumagica, artist collaboration, one-hour drawing challenge, toon (style), 1990s (style), 4koma, 2koma, mutation, deformed, distorted, disfigured, bad anatomy, unnatural hair, bad face, mob face, bad eyes, empty eyes, bad proportions, bad limbs, amputee, bad arm, bad hands, bad hand structure, extra digits, fewer digits, bad leg, extra leg, distorted composition, bad perspective, multiple views, disorganized colors, unfinished, incomplete, displeasing, very displeasing, unsatisfactory, inadequate, deficient, subpar, poor, blurry, lowres, worst quality, bad quality, fewer details, sketch, sketch lines, jaggy lines, rough lines, multiple others, outline, outer glow, white pupils, colored inner hair, saturated
+
+
+============================================================
+④ 삼신의 손
+①의 발전형. 밤하늘에서 흰 소매의 주름진 큰 손이 내려와 금 간 알 하나를 아이 머리 위에 내려놓는다. 뒷모습 아이는 더 어리게.
+============================================================
+■ 베이스 프롬프트
+1boy, solo, korean apartment rooftop at night, 1.4::giant wrinkled old hand reaching down from the night sky, disembodied hand, white hanbok sleeve::, 1.3::the giant hand gently lowering a single glowing golden egg::, the egg cracking, light leaking from the crack, surreal, quiet, vast night sky, faint stars, city lights below, deep blue, from behind, full body, 0.5::artist:sangobob::, 0.8::artist:ratatatat74 ::, 1.0::artist:patzzi::, 1.0::artist:wujurana::, 1.0::artist:danimaru::, 1.1::artist:quasarcake::, 1.3::artist:ameya (okemu ame)::, 1.3::artist:wlop::, 1.4::artist:henriiku (ahemaru)::, year 2026, year 2025, year 2024, 3::white outline, colored lineart::, 2::manga::, ultra complexity, depth of field, highres, best quality, masterpiece, very aesthetic, absurdres, no text, -3::artist collaboration ::, -2::flat color::, 0.7::jaggy lines::, 1.2::anime coloring::, 0.2::realistic::, -1::thick outlines, muted color, pale color::, -2::people background, crowd background::
+
+■ 캐릭터 프롬프트
+child, boy, small child, short black hair, navy hoodie, school backpack, standing, looking up, from behind
+
+■ 캐릭터 네거
+multiple people, 1.5::large breasts, huge breasts::, bad proportions, deformed, disfigured, worst quality, bad quality, very displeasing, displeasing, lowres, error, artistic error, bad anatomy, bad perspective, bad face, bad teeth, bad neck, bad arm, bad hands, bad leg, bad feet, extra faces, extra eyes, extra eyebrows, extra mouth, extra ears, extra arms, extra hands, extra legs, extra digits, missing limb, missing finger, wrong hand, mutation, unfinished, jpeg artifacts, watermark, signature, logo, dark nose, blurry, multiple views, comic, thick eyeliner, heavy makeup, bold lines, thick outlines, makeup, lipstick, mature female, mature male, adult, older, revealing clothes, suggestive
+
+■ Undesired Content
+nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, border, frame, blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, dated, artistic error, scan artifacts, jpeg artifacts, upscaled, aliasing, film grain, heavy film grain, dithering, chromatic aberration, digital dissolve, halftone, screentones, artist:xinzoruo, artist:milkpanda, artist:kurukurumagica, artist collaboration, one-hour drawing challenge, toon (style), 1990s (style), 4koma, 2koma, mutation, deformed, distorted, disfigured, bad anatomy, unnatural hair, bad face, mob face, bad eyes, empty eyes, bad proportions, bad limbs, amputee, bad arm, bad hands, bad hand structure, extra digits, fewer digits, bad leg, extra leg, distorted composition, bad perspective, multiple views, disorganized colors, unfinished, incomplete, displeasing, very displeasing, unsatisfactory, inadequate, deficient, subpar, poor, blurry, lowres, worst quality, bad quality, fewer details, sketch, sketch lines, jaggy lines, rough lines, multiple others, outline, outer glow, white pupils, colored inner hair, saturated, multiple eggs, many eggs, lanterns, sky lanterns, multiple hands, extra fingers
 

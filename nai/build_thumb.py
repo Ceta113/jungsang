@@ -36,11 +36,20 @@ THUMBS = [
      "child, girl, elementary school student, black hair, low twintails, black eyes, yellow hat, red school backpack, "
      "white t-shirt, overalls, walking, looking up, surprised, open mouth",
      True),
+    ("④ 삼신의 손",
+     "①의 발전형. 밤하늘에서 흰 소매의 주름진 큰 손이 내려와 금 간 알 하나를 아이 머리 위에 내려놓는다. 뒷모습 아이는 더 어리게.",
+     "1boy, solo",
+     "korean apartment rooftop at night, 1.4::giant wrinkled old hand reaching down from the night sky, disembodied hand, white hanbok sleeve::, "
+     "1.3::the giant hand gently lowering a single glowing golden egg::, the egg cracking, light leaking from the crack, "
+     "surreal, quiet, vast night sky, faint stars, city lights below, deep blue, from behind, full body",
+     "child, boy, small child, short black hair, navy hoodie, school backpack, standing, looking up, from behind",
+     True),
 ]
 
 
-# 항목별로 Undesired Content 뒤에 더 붙일 것 (①은 알이 하나만 나와야 한다)
-EXTRA_NEG = {0: "multiple eggs, many eggs, lanterns, sky lanterns"}
+# 항목별로 Undesired Content 뒤에 더 붙일 것 (①④는 알이 하나만 나와야 한다)
+EXTRA_NEG = {0: "multiple eggs, many eggs, lanterns, sky lanterns",
+             3: "multiple eggs, many eggs, lanterns, sky lanterns, multiple hands, extra fingers"}
 SIZE = [832, 1216]  # 크랙 썸네일은 세로
 
 
@@ -50,7 +59,7 @@ def negative(i):
 
 def main():
     lines = [
-        "정상 · 크랙 썸네일용 NAI 프롬프트 3종",
+        f"정상 · 크랙 썸네일용 NAI 프롬프트 {len(THUMBS)}종",
         f"설정: {SETTINGS['model']} · {SETTINGS['steps']} steps · scale {SETTINGS['scale']} · {SETTINGS['sampler']} · {SETTINGS['noise_schedule']}",
         f"크기: 세로 {SIZE[0]}x{SIZE[1]}. 칸마다 그대로 복사.",
         "글자는 NAI가 못 쓰니 제목 '정상'은 뽑은 뒤 따로 얹는다.",
