@@ -1,0 +1,55 @@
+정상 · 크랙 썸네일용 NAI 프롬프트 3종
+설정: nai-diffusion-5-full · 28 steps · scale 7 · k_euler_ancestral · karras
+크기: 정사각 1024x1024 (세로 썸네일이면 832x1216). 칸마다 그대로 복사.
+글자는 NAI가 못 쓰니 제목 '정상'은 뽑은 뒤 따로 얹는다.
+
+============================================================
+① 알이 내려오는 밤 (추천)
+아파트 옥상에서 아이가 하늘을 올려다본다. 등불처럼 내려오는 알 수십 개 중 하나만 금빛으로 깨진다. 뒷모습이라 성별·얼굴을 정하지 않아도 된다.
+============================================================
+■ 베이스 프롬프트
+1boy, solo, korean apartment complex at night, rooftop, 1.3::countless glowing eggs floating down from the night sky like lanterns::, 1.2::one golden egg cracking open with light rays::, surreal, vast night sky, city lights below, deep blue, wide shot, from behind, 0.5::artist:sangobob::, 0.8::artist:ratatatat74 ::, 1.0::artist:patzzi::, 1.0::artist:wujurana::, 1.0::artist:danimaru::, 1.1::artist:quasarcake::, 1.3::artist:ameya (okemu ame)::, 1.3::artist:wlop::, 1.4::artist:henriiku (ahemaru)::, year 2026, year 2025, year 2024, 3::white outline, colored lineart::, 2::manga::, ultra complexity, depth of field, highres, best quality, masterpiece, very aesthetic, absurdres, no text, -3::artist collaboration ::, -2::flat color::, 0.7::jaggy lines::, 1.2::anime coloring::, 0.2::realistic::, -1::thick outlines, muted color, pale color::, -2::people background, crowd background::
+
+■ 캐릭터 프롬프트
+child, boy, short black hair, navy hoodie, school backpack, standing, looking up, from behind
+
+■ 캐릭터 네거
+multiple people, 1.5::large breasts, huge breasts::, bad proportions, deformed, disfigured, worst quality, bad quality, very displeasing, displeasing, lowres, error, artistic error, bad anatomy, bad perspective, bad face, bad teeth, bad neck, bad arm, bad hands, bad leg, bad feet, extra faces, extra eyes, extra eyebrows, extra mouth, extra ears, extra arms, extra hands, extra legs, extra digits, missing limb, missing finger, wrong hand, mutation, unfinished, jpeg artifacts, watermark, signature, logo, dark nose, blurry, multiple views, comic, thick eyeliner, heavy makeup, bold lines, thick outlines, makeup, lipstick, mature female, mature male, adult, older, revealing clothes, suggestive
+
+■ Undesired Content
+nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, border, frame, blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, dated, artistic error, scan artifacts, jpeg artifacts, upscaled, aliasing, film grain, heavy film grain, dithering, chromatic aberration, digital dissolve, halftone, screentones, artist:xinzoruo, artist:milkpanda, artist:kurukurumagica, artist collaboration, one-hour drawing challenge, toon (style), 1990s (style), 4koma, 2koma, mutation, deformed, distorted, disfigured, bad anatomy, unnatural hair, bad face, mob face, bad eyes, empty eyes, bad proportions, bad limbs, amputee, bad arm, bad hands, bad hand structure, extra digits, fewer digits, bad leg, extra leg, distorted composition, bad perspective, multiple views, disorganized colors, unfinished, incomplete, displeasing, very displeasing, unsatisfactory, inadequate, deficient, subpar, poor, blurry, lowres, worst quality, bad quality, fewer details, sketch, sketch lines, jaggy lines, rough lines, multiple others, outline, outer glow, white pupils, colored inner hair, saturated
+
+
+============================================================
+② 삼신할미
+얼굴이 보이는 캐릭터형 썸네일. 금이 간 알 하나를 두 손으로 내미는 삼신할미, 뒤로 알 선반.
+============================================================
+■ 베이스 프롬프트
+1girl, solo, old woman, traditional korean room, wooden shelves full of glowing eggs, candlelight, hearth, steam, warm lighting, upper body, 0.5::artist:sangobob::, 0.8::artist:ratatatat74 ::, 1.0::artist:patzzi::, 1.0::artist:wujurana::, 1.0::artist:danimaru::, 1.1::artist:quasarcake::, 1.3::artist:ameya (okemu ame)::, 1.3::artist:wlop::, 1.4::artist:henriiku (ahemaru)::, year 2026, year 2025, year 2024, 3::white outline, colored lineart::, 2::manga::, ultra complexity, depth of field, highres, best quality, masterpiece, very aesthetic, absurdres, no text, -3::artist collaboration ::, -2::flat color::, 0.7::jaggy lines::, 1.2::anime coloring::, 0.2::realistic::, -1::thick outlines, muted color, pale color::, -2::people background, crowd background::
+
+■ 캐릭터 프롬프트
+1.2::old woman, elderly, wrinkled face::, grandmother, white hair, hair bun, 1.2::white hanbok, korean traditional clothes::, round glasses on nose, holding a glowing egg in both hands, offering egg to viewer, 1.2::golden light leaking from cracks in the egg::, light smile, closed mouth, looking at viewer
+
+■ 캐릭터 네거
+multiple people, 1.5::large breasts, huge breasts::, bad proportions, deformed, disfigured, worst quality, bad quality, very displeasing, displeasing, lowres, error, artistic error, bad anatomy, bad perspective, bad face, bad teeth, bad neck, bad arm, bad hands, bad leg, bad feet, extra faces, extra eyes, extra eyebrows, extra mouth, extra ears, extra arms, extra hands, extra legs, extra digits, missing limb, missing finger, wrong hand, mutation, unfinished, jpeg artifacts, watermark, signature, logo, dark nose, blurry, multiple views, comic, thick eyeliner, heavy makeup, bold lines, thick outlines
+
+■ Undesired Content
+nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, border, frame, blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, dated, artistic error, scan artifacts, jpeg artifacts, upscaled, aliasing, film grain, heavy film grain, dithering, chromatic aberration, digital dissolve, halftone, screentones, artist:xinzoruo, artist:milkpanda, artist:kurukurumagica, artist collaboration, one-hour drawing challenge, toon (style), 1990s (style), 4koma, 2koma, mutation, deformed, distorted, disfigured, bad anatomy, unnatural hair, bad face, mob face, bad eyes, empty eyes, bad proportions, bad limbs, amputee, bad arm, bad hands, bad hand structure, extra digits, fewer digits, bad leg, extra leg, distorted composition, bad perspective, multiple views, disorganized colors, unfinished, incomplete, displeasing, very displeasing, unsatisfactory, inadequate, deficient, subpar, poor, blurry, lowres, worst quality, bad quality, fewer details, sketch, sketch lines, jaggy lines, rough lines, multiple others, outline, outer glow, white pupils, colored inner hair, saturated
+
+
+============================================================
+③ 평범한 등굣길
+제목 '정상'의 반어. 아주 평범한 아침 등굣길인데 해 자리에 금 간 거대한 알이 떠 있고, 아무도 신경 쓰지 않는다.
+============================================================
+■ 베이스 프롬프트
+1girl, solo, korean residential street, morning, crosswalk, apartment buildings, school route, 1.3::giant cracked egg in the sky instead of the sun, golden light from the crack::, surreal, everyday life, wide shot, from below, 0.5::artist:sangobob::, 0.8::artist:ratatatat74 ::, 1.0::artist:patzzi::, 1.0::artist:wujurana::, 1.0::artist:danimaru::, 1.1::artist:quasarcake::, 1.3::artist:ameya (okemu ame)::, 1.3::artist:wlop::, 1.4::artist:henriiku (ahemaru)::, year 2026, year 2025, year 2024, 3::white outline, colored lineart::, 2::manga::, ultra complexity, depth of field, highres, best quality, masterpiece, very aesthetic, absurdres, no text, -3::artist collaboration ::, -2::flat color::, 0.7::jaggy lines::, 1.2::anime coloring::, 0.2::realistic::, -1::thick outlines, muted color, pale color::, -2::people background, crowd background::
+
+■ 캐릭터 프롬프트
+child, girl, elementary school student, black hair, low twintails, black eyes, yellow hat, red school backpack, white t-shirt, overalls, walking, looking up, surprised, open mouth
+
+■ 캐릭터 네거
+multiple people, 1.5::large breasts, huge breasts::, bad proportions, deformed, disfigured, worst quality, bad quality, very displeasing, displeasing, lowres, error, artistic error, bad anatomy, bad perspective, bad face, bad teeth, bad neck, bad arm, bad hands, bad leg, bad feet, extra faces, extra eyes, extra eyebrows, extra mouth, extra ears, extra arms, extra hands, extra legs, extra digits, missing limb, missing finger, wrong hand, mutation, unfinished, jpeg artifacts, watermark, signature, logo, dark nose, blurry, multiple views, comic, thick eyeliner, heavy makeup, bold lines, thick outlines, makeup, lipstick, mature female, mature male, adult, older, revealing clothes, suggestive
+
+■ Undesired Content
+nsfw, suggestive, revealing clothes, cleavage, swimsuit, underwear, border, frame, blank page, text, logo, watermark, too many watermarks, reference, signature, artist name, dated, artistic error, scan artifacts, jpeg artifacts, upscaled, aliasing, film grain, heavy film grain, dithering, chromatic aberration, digital dissolve, halftone, screentones, artist:xinzoruo, artist:milkpanda, artist:kurukurumagica, artist collaboration, one-hour drawing challenge, toon (style), 1990s (style), 4koma, 2koma, mutation, deformed, distorted, disfigured, bad anatomy, unnatural hair, bad face, mob face, bad eyes, empty eyes, bad proportions, bad limbs, amputee, bad arm, bad hands, bad hand structure, extra digits, fewer digits, bad leg, extra leg, distorted composition, bad perspective, multiple views, disorganized colors, unfinished, incomplete, displeasing, very displeasing, unsatisfactory, inadequate, deficient, subpar, poor, blurry, lowres, worst quality, bad quality, fewer details, sketch, sketch lines, jaggy lines, rough lines, multiple others, outline, outer glow, white pupils, colored inner hair, saturated
+
