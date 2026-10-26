@@ -4,6 +4,8 @@
 
 삼신 가챠는 재앙부터 신화까지 7등급 × 하·중·상 = 21단계에 비정상 3단계가 더해진다. 실패에는 보상과 극복 루트가 있다.
 
+**가챠 실행기 웹사이트: https://ceta113.github.io/jungsang/** (GitHub Pages, `gh-pages` 브랜치 = `web/` 폴더)
+
 ## 구성
 
 | 경로 | 내용 |
@@ -32,3 +34,12 @@ python art/render_guide.py
 ```
 
 필요한 것: Python 3, numpy, scipy, Pillow, 맑은 고딕(Windows 기본 폰트).
+
+## 웹사이트 업데이트
+
+`web/`을 고쳐 main에 커밋한 뒤, `web/` 폴더만 `gh-pages` 브랜치로 올리면 1~2분 뒤 사이트에 반영된다.
+
+```bash
+git push origin main
+git subtree push --prefix web origin gh-pages
+```
