@@ -94,31 +94,38 @@ def main():
 
     base = Image.open(a.src).convert("RGB")
     W, H = base.size
-    cell = int(a.size * H * SS)
-    mask = glyph_mask(a.text, cell, rng)
-    alpha, tone = brush(mask, rng)
+    al, tn = render(a.text, int(a.size * H), rng)
+    img = composite(np.asarray(base, np.float32), al, tn, int(a.cx * W - al.shape[1] / 2), int(a.top * H))
+    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(a.dst)
+    print(a.dst)
 
-    # 원래 크기로 내리기
+
+def render(text, cell_px, rng):
+    """세로 붓글씨 → (알파, 먹 농담) 원래 해상도 배열."""
+    mask = glyph_mask(text, cell_px * SS, rng)
+    alpha, tone = brush(mask, rng)
     sm = (int(mask.shape[1] / SS), int(mask.shape[0] / SS))
     al = np.asarray(Image.fromarray((alpha * 255).astype(np.uint8)).resize(sm, Image.LANCZOS), np.float32) / 255
     tn = np.asarray(Image.fromarray((tone * 200).astype(np.uint8)).resize(sm, Image.BILINEAR), np.float32) / 200
+    return al, tn
 
-    x0 = int(a.cx * W - sm[0] / 2)
-    y0 = int(a.top * H)
-    full_a = np.zeros((H, W), np.float32)
-    full_t = np.ones((H, W), np.float32)
-    ys, xs = slice(max(y0, 0), min(y0 + sm[1], H)), slice(max(x0, 0), min(x0 + sm[0], W))
-    full_a[ys, xs] = al[ys.start - y0:ys.stop - y0, xs.start - x0:xs.stop - x0]
-    full_t[ys, xs] = tn[ys.start - y0:ys.stop - y0, xs.start - x0:xs.stop - x0]
 
-    img = np.asarray(base, np.float32)
-    # 은은한 금빛 번짐(글자 뒤) → 글자
-    glow = ndi.gaussian_filter(full_a, 14)[..., None] * 0.55
+def paste_layer(H, W, layer, x0, y0, fill=0.0):
+    """작은 배열을 (x0, y0)에 놓은 전체 크기 배열. 화면 밖은 잘린다."""
+    full = np.full((H, W), fill, np.float32)
+    h, w = layer.shape
+    ys, xs = slice(max(y0, 0), min(y0 + h, H)), slice(max(x0, 0), min(x0 + w, W))
+    full[ys, xs] = layer[ys.start - y0:ys.stop - y0, xs.start - x0:xs.stop - x0]
+    return full
+
+
+def composite(img, al, tn, x0, y0, ink=INK, glow_amt=1.0):
+    """금빛 번짐을 깔고 그 위에 먹(미색)을 얹는다."""
+    H, W = img.shape[:2]
+    fa, ft = paste_layer(H, W, al, x0, y0), paste_layer(H, W, tn, x0, y0, 1.0)
+    glow = ndi.gaussian_filter(fa, 14)[..., None] * 0.55 * glow_amt
     img = img + (GLOW - img) * np.clip(glow * 0.6, 0, 1) * 0.5 + GLOW * glow * 0.12
-    ink = INK * full_t[..., None]
-    img = img * (1 - full_a[..., None]) + ink * full_a[..., None]
-    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(a.dst)
-    print(a.dst)
+    return img * (1 - fa[..., None]) + ink * ft[..., None] * fa[..., None]
 
 
 if __name__ == "__main__":
