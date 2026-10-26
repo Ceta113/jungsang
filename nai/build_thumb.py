@@ -12,11 +12,12 @@ HERE = Path(__file__).parent
 
 # (제목, 한 줄 설명, 인원 태그, 장면, 캐릭터, 아이 여부)
 THUMBS = [
-    ("① 알이 내려오는 밤 (추천)",
-     "아파트 옥상에서 아이가 하늘을 올려다본다. 등불처럼 내려오는 알 수십 개 중 하나만 금빛으로 깨진다. 뒷모습이라 성별·얼굴을 정하지 않아도 된다.",
+    ("① 알 하나의 밤 (채택)",
+     "아파트 옥상에서 아이가 밤하늘을 올려다본다. 하늘에는 금빛으로 깨지는 알 하나뿐. 뒷모습이라 성별·얼굴을 정하지 않아도 된다.",
      "1boy, solo",
-     "korean apartment complex at night, rooftop, 1.3::countless glowing eggs floating down from the night sky like lanterns::, "
-     "1.2::one golden egg cracking open with light rays::, surreal, vast night sky, city lights below, deep blue, wide shot, from behind",
+     "korean apartment complex at night, rooftop, 1.4::single golden egg floating high in the night sky::, "
+     "1.2::the egg cracking open, light leaking from the crack::, surreal, quiet, vast empty night sky, faint stars, "
+     "city lights below, deep blue, from behind, full body",
      "child, boy, short black hair, navy hoodie, school backpack, standing, looking up, from behind",
      True),
     ("② 삼신할미",
@@ -38,21 +39,30 @@ THUMBS = [
 ]
 
 
+# 항목별로 Undesired Content 뒤에 더 붙일 것 (①은 알이 하나만 나와야 한다)
+EXTRA_NEG = {0: "multiple eggs, many eggs, lanterns, sky lanterns"}
+SIZE = [832, 1216]  # 크랙 썸네일은 세로
+
+
+def negative(i):
+    return NEG + (", " + EXTRA_NEG[i] if i in EXTRA_NEG else "")
+
+
 def main():
     lines = [
         "정상 · 크랙 썸네일용 NAI 프롬프트 3종",
         f"설정: {SETTINGS['model']} · {SETTINGS['steps']} steps · scale {SETTINGS['scale']} · {SETTINGS['sampler']} · {SETTINGS['noise_schedule']}",
-        "크기: 정사각 1024x1024 (세로 썸네일이면 832x1216). 칸마다 그대로 복사.",
+        f"크기: 세로 {SIZE[0]}x{SIZE[1]}. 칸마다 그대로 복사.",
         "글자는 NAI가 못 쓰니 제목 '정상'은 뽑은 뒤 따로 얹는다.",
         "",
     ]
-    for title, desc, count, scene, char, child in THUMBS:
+    for i, (title, desc, count, scene, char, child) in enumerate(THUMBS):
         cneg = CHAR_NEG + (", " + CHILD_NEG if child else "")
         lines += ["=" * 60, title, desc, "=" * 60,
                   "■ 베이스 프롬프트", f"{count}, {scene}, {STYLE}", "",
                   "■ 캐릭터 프롬프트", char, "",
                   "■ 캐릭터 네거", cneg, "",
-                  "■ Undesired Content", NEG, "", ""]
+                  "■ Undesired Content", negative(i), "", ""]
     out = HERE / "thumbnail_prompts.txt"
     out.write_text("\n".join(lines), encoding="utf-8")
     print(out)
